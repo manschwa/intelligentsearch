@@ -4,7 +4,7 @@
  *
  * @author intelec
  */
-class IndexObject_Seminar {
+class IndexObject_User {
 
     const RATING_USER = 1.0;
 

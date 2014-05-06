@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Description of IndexObject_Seminar
  *
@@ -12,20 +13,31 @@ class IndexObject_Seminar {
     const RATING_SEMINAR_OTHER = 0.6;
 
     public static function fullIndex() {
-        SearchObject::deleteType('seminar');
-        $courses = DBManager::get()->query('SELECT * FROM seminare LIMIT 30');
+        $courses = DBManager::get()->query('SELECT * FROM seminare LIMIT 50');
         while ($course = $courses->fetch(PDO::FETCH_ASSOC)) {
             self::index(Course::import($course));
         }
     }
 
+    public static function createOrFind($course) {
+        $object = SearchObject::findByRange_id($course->id);
+        if ($object) {
+            $object = current($object);
+            @SearchIndex::deleteBySQL('object_id = ?', array($object->object_id));
+        } else {
+            $object = SearchObject::create(array(
+                        'range_id' => $course->id,
+                        'type' => 'seminar',
+                        'title' => $course->start_semester->name . ' ' . $GLOBALS['SEM_TYPE'][$course->status]['name'] . ' ' . $course->VeranstaltungsNummer . ' ' . $course->name,
+                        'link' => 'details.php?cid=' . $course->id
+            ));
+        }
+        return $object;
+    }
+
     public static function index($course) {
-        $object = SearchObject::create(array(
-                    'range_id' => $course->id,
-                    'type' => 'seminar',
-                    'title' => $course->start_semester->name . ' ' . $GLOBALS['SEM_TYPE'][$course->status]['name'] . ' ' . $course->VeranstaltungsNummer . ' ' . $course->name,
-                    'link' => 'details.php?cid=' . $course->id
-        ));
+
+        $object = self::createOrFind($course);
         SearchIndex::index($object->id, $course->VeranstaltungsNummer . " " . $course->Name, IndexManager::calculateRating(self::RATING_SEMINAR, $course->start_time));
 
         // Insert Dozenten into database
