@@ -13,7 +13,7 @@ class IndexObject_Seminar {
     const RATING_SEMINAR_OTHER = 0.6;
 
     public static function fullIndex() {
-        $courses = DBManager::get()->query('SELECT * FROM seminare LIMIT 50');
+        $courses = DBManager::get()->query('SELECT * FROM seminare');
         while ($course = $courses->fetch(PDO::FETCH_ASSOC)) {
             self::index(Course::import($course));
         }
@@ -23,7 +23,7 @@ class IndexObject_Seminar {
         $object = SearchObject::findByRange_id($course->id);
         if ($object) {
             $object = current($object);
-            @SearchIndex::deleteBySQL('object_id = ?', array($object->object_id));
+            SearchIndex::deleteObject($object->object_id);
         } else {
             $object = SearchObject::create(array(
                         'range_id' => $course->id,

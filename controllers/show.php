@@ -17,8 +17,8 @@ class ShowController extends StudipController {
         if (Request::submitted('search')) {
             $time = microtime(1);
             $this->query = Request::get('search');
-            $this->results = IntelligentSearch::search($this->query);
-            $this->counter = IntelligentSearch::count($this->query);
+            $this->results = SearchIndex::search($this->query);
+            $this->counter = SearchIndex::count($this->query);
             $this->time = microtime(1)-$time;
         }
     }

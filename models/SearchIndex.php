@@ -1,4 +1,5 @@
 <?php
+
 /**
  * SearchIndex.php
  * model class for table SearchIndex
@@ -14,22 +15,38 @@
  * @category    Stud.IP
  * @since       3.0
  */
+class SearchIndex {
 
-class SearchIndex extends SimpleORMap
-{
-    public function __construct($id = null)
-    {
-        $this->db_table = 'search_index';
-        parent::__construct($id);
+    public static function index($object_id, $text, $relevance = 0.5) {
+        $stmt = DBManager::get()->prepare('INSERT INTO search_index (object_id, text, relevance) VALUES (?,?,?)');
+        $stmt->execute(array($object_id, $text, $relevance));
     }
     
-    public static function index($object_id, $text, $relevance = 0.5) {
-        
-        // We know we have no private key
-        @self::create(array(
-            'object_id' => $object_id,
-            'text' => $text,
-            'relevance' => $relevance
-        ));
+    public static function deleteObject($object_id) {
+        $stmt = DBManager::get()->prepare('DELETE FROM search_index WHERE object_id = ?');
+        $stmt->execute(array($object_id));        
     }
+
+    public static function search($string) {
+
+        $search = '%' . $string . '%';
+        $statement = DBManager::get()->prepare("SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? ORDER BY relevance DESC LIMIT 30");
+        $statement->execute(array($search));
+        while ($result = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $object = SearchObject::find($result['object_id']);
+            $object->info = preg_replace_callback("/$string/i", function($hit) {
+                return "<span class='result'>$hit[0]</span>";
+            }, $result['text']);
+            $searchResults[] = $object;
+        }
+        return $searchResults;
+    }
+
+    public static function count($string) {
+        $search = '%' . $string . '%';
+        $statement = DBManager::get()->prepare("SELECT count(*) FROM search_index WHERE text LIKE ?");
+        $statement->execute(array($search));
+        return $statement->fetch(PDO::FETCH_COLUMN, 0);
+    }
+
 }
