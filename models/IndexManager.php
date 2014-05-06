@@ -23,6 +23,15 @@ class IndexManager {
         }
     }
 
+    public static function update() {
+        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
+            $indexClass = basename($indexFile, ".php");
+            SearchIndex::prepareUpdate();
+            $indexClass::update();
+            SearchIndex::finishUpdate();
+        }
+    }
+
     public static function index($type) {
         $indexClass = "IndexObject_" . $type;
         SearchIndex::prepareUpdate();

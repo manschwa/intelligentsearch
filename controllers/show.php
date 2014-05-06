@@ -31,6 +31,11 @@ class ShowController extends StudipController {
         }
     }
     
+    public function update_action() {
+        IndexManager::update();
+        $this->render_action('create');
+    }
+    
     public function reset_action() {
         DBManager::get()->query('TRUNCATE TABLE search_index');
         DBManager::get()->query('TRUNCATE TABLE search_object');

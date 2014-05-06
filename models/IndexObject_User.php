@@ -15,7 +15,14 @@ class IndexObject_User {
             self::index(User::import($user));
         }
     }
-    
+
+    public static function update() {
+        $users = DBManager::get()->query('SELECT auth_user_md5.* FROM auth_user_md5 WHERE user_id NOT IN (SELECT distinct(range_id) FROM search_object) LIMIT 500');
+        while ($user = $users->fetch(PDO::FETCH_ASSOC)) {
+            self::index(User::import($user));
+        }
+    }
+
     public static function createOrFind($user) {
         $object = SearchObject::findByRange_id($user->id);
         if ($object) {

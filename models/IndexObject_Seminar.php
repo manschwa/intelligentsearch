@@ -18,6 +18,13 @@ class IndexObject_Seminar {
             self::index(Course::import($course));
         }
     }
+    
+        public static function update() {
+        $courses = DBManager::get()->query('SELECT seminare.* FROM seminare WHERE seminar_id NOT IN (SELECT distinct(range_id) FROM search_object) LIMIT 500');
+        while ($course = $courses->fetch(PDO::FETCH_ASSOC)) {
+            self::index(Course::import($course));
+        }
+    }
 
     public static function createOrFind($course) {
         $object = SearchObject::findByRange_id($course->id);
