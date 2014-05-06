@@ -25,8 +25,7 @@ class ShowController extends StudipController {
 
     public function create_action($type = null) {
         if ($type) {
-            $method = 'index'.$type;
-            IndexManager::$method();
+            IndexManager::index($type);
         } else {
             IndexManager::indexAll();
         }

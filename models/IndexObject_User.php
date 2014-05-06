@@ -12,10 +12,10 @@ class IndexObject_User {
     public static function fullIndex() {
         $users = DBManager::get()->query('SELECT * FROM auth_user_md5');
         while ($user = $users->fetch(PDO::FETCH_ASSOC)) {
-            self::indexUser(Course::import($user));
+            self::index(User::import($user));
         }
     }
-
+    
     public static function createOrFind($user) {
         $object = SearchObject::findByRange_id($user->id);
         if ($object) {

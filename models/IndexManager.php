@@ -15,12 +15,19 @@ class IndexManager {
     const TIME_MALUS = 0.5;
 
     public static function indexAll() {
-        foreach (glob(__DIR__.'/IndexObject_*') as $indexFile) {
+        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             $indexClass = basename($indexFile, ".php");
             SearchIndex::prepareUpdate();
             $indexClass::fullIndex();
             SearchIndex::finishUpdate();
         }
+    }
+
+    public static function index($type) {
+        $indexClass = "IndexObject_" . $type;
+        SearchIndex::prepareUpdate();
+        $indexClass::fullIndex();
+        SearchIndex::finishUpdate();
     }
 
     public static function calculateRating($initial, $timestamp) {
