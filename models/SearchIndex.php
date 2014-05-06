@@ -48,5 +48,14 @@ class SearchIndex {
         $statement->execute(array($search));
         return $statement->fetch(PDO::FETCH_COLUMN, 0);
     }
+    
+    public static function prepareUpdate() {
+        DBManager::get()->query("ALTER TABLE search_index DISABLE KEYS");
+    }
+    
+    public static function finishUpdate() {
+        DBManager::get()->query("ALTER TABLE search_index ENABLE KEYS");
+        DBManager::get()->query("OPTIMIZE TABLE search_index");
+    }
 
 }

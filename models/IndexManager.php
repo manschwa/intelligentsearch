@@ -17,7 +17,9 @@ class IndexManager {
     public static function indexAll() {
         foreach (glob(__DIR__.'/IndexObject_*') as $indexFile) {
             $indexClass = basename($indexFile, ".php");
+            SearchIndex::prepareUpdate();
             $indexClass::fullIndex();
+            SearchIndex::finishUpdate();
         }
     }
 
