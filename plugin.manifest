@@ -1,0 +1,5 @@
+pluginname=Intelligente Suche
+pluginclassname=IntelligentesuchePlugin
+origin=intelec
+version=0.1a
+studipMinVersion=3.0

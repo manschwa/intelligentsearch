@@ -1,0 +1,11 @@
+section.search_results article {
+  margin-bottom: 1em;
+  font-size: 0.8em;
+}
+section.search_results article a {
+  display: block;
+  font-size: 1.4em;
+}
+section.search_results article span.result {
+  background-color: #ffe4ad;
+}
