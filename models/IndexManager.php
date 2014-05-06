@@ -15,8 +15,6 @@ class IndexManager {
     const TIME_MALUS = 0.5;
 
     public static function indexAll() {
-        //self::indexCourses();
-        //self::indexUsers();
         foreach (glob(__DIR__.'/IndexObject_*') as $indexFile) {
             $indexClass = basename($indexFile, ".php");
             $indexClass::fullIndex();
