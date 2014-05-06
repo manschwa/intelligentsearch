@@ -6,40 +6,24 @@
  */
 class IndexObject_Seminar {
 
-    const RATING_SEMINAR = 0.8;
-    const RATING_SEMINAR_DOZENT = 0.75;
-    const RATING_SEMINAR_SUBTITLE = 0.7;
-    const RATING_SEMINAR_OTHER = 0.6;
+    const RATING_USER = 1.0;
 
     public static function fullIndex() {
-        SearchObject::deleteType('seminar');
-        $courses = DBManager::get()->query('SELECT * FROM seminare LIMIT 30');
-        while ($course = $courses->fetch(PDO::FETCH_ASSOC)) {
-            self::index(Course::import($course));
+        SearchObject::deleteType('user');
+        $users = DBManager::get()->query('SELECT * FROM auth_user_md5');
+        while ($user = $users->fetch(PDO::FETCH_ASSOC)) {
+            self::indexUser(Course::import($user));
         }
     }
 
     public static function index($course) {
         $object = SearchObject::create(array(
-                    'range_id' => $course->id,
-                    'type' => 'seminar',
-                    'title' => $course->start_semester->name . ' ' . $GLOBALS['SEM_TYPE'][$course->status]['name'] . ' ' . $course->VeranstaltungsNummer . ' ' . $course->name,
-                    'link' => 'details.php?cid=' . $course->id
+                    'range_id' => $user->id,
+                    'type' => 'user',
+                    'title' => $user->getFullname(),
+                    'link' => 'about.php?username=' . $user->username
         ));
-        SearchIndex::index($object->id, $course->VeranstaltungsNummer . " " . $course->Name, IndexManager::calculateRating(self::RATING_SEMINAR, $course->start_time));
-
-        // Insert Dozenten into database
-        $dozenten = $course->members->findBy('status', 'dozent')->pluck('user');
-        $dozentenlist = join(', ', array_map(function($user) {
-                    return $user->getFullname();
-                }, $dozenten));
-        SearchIndex::index($object->id, $dozentenlist, IndexManager::calculateRating(self::RATING_SEMINAR_DOZENT, $course->start_time));
-        if ($course->Untertitel) {
-            SearchIndex::index($object->id, $course->Untertitel, IndexManager::calculateRating(self::RATING_SEMINAR_SUBTITLE, $course->start_time));
-        }
-        if ($course->Sonstiges) {
-            SearchIndex::index($object->id, $course->Sonstiges, IndexManager::calculateRating(self::RATING_SEMINAR_OTHER, $course->start_time));
-        }
+        SearchIndex::index($object->id, $user->getFullname() . ' ' . $user->username, self::RATING_USER);
     }
 
 }
