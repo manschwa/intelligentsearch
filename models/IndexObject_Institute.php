@@ -11,16 +11,17 @@ class IndexObject_Institute {
 
     public static function fullIndex() {
         $institute = DBManager::get()->query('SELECT * FROM Institute');
-        while ($institute = $institute->fetch(PDO::FETCH_ASSOC)) {
-            self::index(Institute::import($institute));
+        while ($institut = $institute->fetch(PDO::FETCH_ASSOC)) {
+            self::index(Institute::import($institut));
         }
     }
-    
-        public static function update() {
+
+    public static function update() {
         $institute = DBManager::get()->query('SELECT Institute.* FROM Institute WHERE institut_id NOT IN (SELECT distinct(range_id) FROM search_object) LIMIT 500');
         while ($institut = $institute->fetch(PDO::FETCH_ASSOC)) {
             self::index(Institute::import($institut));
         }
+        return $institute->rowCount();
     }
 
     public static function createOrFind($institute) {
@@ -43,7 +44,6 @@ class IndexObject_Institute {
 
         $object = self::createOrFind($institute);
         SearchIndex::index($object->id, $institute->name, self::RATING_INSTITUTE);
-
     }
 
 }

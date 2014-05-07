@@ -25,14 +25,18 @@ class ShowController extends StudipController {
 
     public function create_action($type = null) {
         if ($type) {
-            IndexManager::index($type);
+            $this->msg = IndexManager::index($type);
         } else {
-            IndexManager::indexAll();
+            $this->msg = "Update finished after: ".IndexManager::indexAll()." Seconds";
         }
     }
     
     public function update_action() {
-        IndexManager::update();
+        if (IndexManager::update()) {
+            $this->msg = ("Exhausted! Run again please!");
+        } else {
+            $this->msg = ("Update done!");
+        }
         $this->render_action('create');
     }
     
