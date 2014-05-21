@@ -53,13 +53,17 @@ class IntelligentSearch {
         if ($GLOBALS['perm']->have_perm('root')) {
             return true;
         }
-        $class = "IndexObject_{$object->type}";
+        $class = self::getClass($object->type);
         return $class::isVisible($object);
     }
 
     public static function getTypeName($key) {
-        $class = "IndexObject_$key";
+        $class = self::getClass($key);
         return $class::getName();
+    }
+    
+    private static function getClass($key) {
+        return "IndexObject_".ucfirst($key);
     }
 
 }
