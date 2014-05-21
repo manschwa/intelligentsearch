@@ -14,37 +14,51 @@ class ShowController extends StudipController {
     }
 
     public function index_action() {
-        
-        // Create search
-        $this->setInfoBoxImage('sidebar/search-sidebar.png');
-        $form = '<form class="studip_form">';
-        $form .= '<input type="text" style="display: inline;" name="search" value="'.Request::get('search').'" placeholder="'._('Suchbegriff').'">';
-        $form .= '</form>';
-        $this->addToInfobox('Suche', $form);
-        
+
+        $this->createSidebar();
+
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch(Request::get('search'), Request::get('filter'));
-            
-            $this->addToInfobox('Typen', "<a href='".URLHelper::getURL('', array("search" => $this->search->query))."'>"._('Alle')." ({$this->search->count})</a>", !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
-            foreach ($this->search->resultTypes as $type => $results) {
-                $this->addToInfobox('Typen', "<a href='".URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type))."'>".IntelligentSearch::getTypeName($type)." ($results)</a>", $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
-            }
-            $this->addToInfobox(_('Info'), sprintf(_('%s Ergebnisse in %s Sekunden'), $this->search->count, round($this->search->time, 3)));
-            
+            $this->addSearchSidebar();
         }
-        
-        // Root may update index
-        if ($GLOBALS['perm']->have_perm('root')) {
-             $this->addToInfobox(_('Aktionen'), "<a href='".$this->url_for('show/fast')."'>Indizieren</a>");
-             $this->addToInfobox(_('Aktionen'), "Achtung! Dauert etwas!");
-        }
-        
     }
-    
+
     public function fast_action() {
         if ($GLOBALS['perm']->check('root'));
         $this->time = IndexManager::sqlIndex();
         $this->redirect('show/index');
+    }
+
+    private function createSidebar() {
+        $sidebar = Sidebar::get();
+        $sidebar->setImage('sidebar/search-sidebar.png');
+
+        $formWidget = new SidebarWidget();
+        $formWidget->setTitle(_('Suche'));
+        $form = '<form class="studip_form">';
+        $form .= '<input type="text" style="display: inline;" name="search" size="36" ""value="' . Request::get('search') . '" placeholder="' . _('Suchbegriff') . '">';
+        $form .= '</form>';
+        $formWidget->addElement(new WidgetElement($form));
+        $sidebar->addWidget($formWidget);
+
+
+        // Root may update index
+        if ($GLOBALS['perm']->have_perm('root')) {
+            $actions = new ActionsWidget();
+            $actions->addLink(_('Indizieren'), $this->url_for('show/fast'));
+            $sidebar->addWidget($actions);
+        }
+    }
+
+    private function addSearchSidebar() {
+        $sidebar = Sidebar::get();
+        $widget = new LinksWidget;
+        $widget->setTitle(_('Ergebnisse'));
+        $widget->addLink(_('Alle') . " ({$this->search->count})", URLHelper::getURL('', array("search" => $this->search->query)), !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+        foreach ($this->search->resultTypes as $type => $results) {
+            $widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+        }
+        $sidebar->addWidget($widget);
     }
 
     // customized #url_for for plugins
