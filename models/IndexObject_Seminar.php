@@ -20,10 +20,10 @@ FROM seminare s
 JOIN search_object ON (s.seminar_id = range_id) 
 JOIN seminar_user u ON (s.seminar_id = u.seminar_id AND u.status = 'dozent')
 JOIN auth_user_md5 a ON (u.user_id = a.user_id)
-JOIN user_info i ON (u.user_id = i.user_id))");
-        IndexManager::createIndex("SELECT object_id, Untertitel, " . IndexManager::relevance(self::RATING_SEMINAR_SUBTITLE, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Untertitel != '')");
-        IndexManager::createIndex("SELECT object_id, Beschreibung, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Beschreibung != '')");
-        IndexManager::createIndex("SELECT object_id, Sonstiges, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " as relevance FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Sonstiges != '')");
+JOIN user_info i ON (u.user_id = i.user_id)");
+        IndexManager::createIndex("SELECT object_id, Untertitel, " . IndexManager::relevance(self::RATING_SEMINAR_SUBTITLE, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Untertitel != ''");
+        IndexManager::createIndex("SELECT object_id, Beschreibung, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Beschreibung != ''");
+        IndexManager::createIndex("SELECT object_id, Sonstiges, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Sonstiges != ''");
     }
 
 }
