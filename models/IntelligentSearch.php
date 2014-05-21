@@ -14,10 +14,10 @@
 class IntelligentSearch {
 
     public $query;
-    public $results;
+    public $results = array();
     public $resultTypes = array();
-    public $time;
-    public $count;
+    public $time = 0;
+    public $count = 0;
     public $error;
     public $resultsPerPage = 30;
     public $minLength = 4;
