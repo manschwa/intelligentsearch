@@ -39,8 +39,8 @@ class IntelligentSearch {
         // Timecapture
         $time = microtime(1);
 
-        $search = '%' . $this->query . '%';
-        $statement = DBManager::get()->prepare("SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? ORDER BY relevance DESC");
+        $search = '%' . str_replace('%', '|%', $this->query) . '%';
+        $statement = DBManager::get()->prepare("SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC");
         $statement->execute(array($search));
         while ($result = $statement->fetch(PDO::FETCH_ASSOC)) {
             $object = SearchObject::find($result['object_id']);
