@@ -5,7 +5,7 @@
  * 
  * Transforms an array of a definded type into a searchindex
  *
- * @author      Florian Bieringer <florian.bieringer@uni-passau.de>
+ * @author      Nobody
  */
 class IndexManager {
 

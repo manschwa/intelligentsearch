@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Description of IndexObject_Seminar
- *
- * @author intelec
- */
 class IndexObject_Institute {
 
     const RATING_INSTITUTE = 1.1;

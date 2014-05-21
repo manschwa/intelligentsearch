@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Description of IndexObject_Seminar
- *
- * @author intelec
- */
 class IndexObject_User {
 
     const RATING_USER = 1.0;

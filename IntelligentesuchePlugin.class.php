@@ -3,11 +3,6 @@ require 'bootstrap.php';
 
 /**
  * IntelligentesuchePlugin.class.php
- *
- * ...
- *
- * @author  Florian Bieringer <florian.bieringer@uni-passau.de>
- * @version 0.1a
  */
 
 class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {

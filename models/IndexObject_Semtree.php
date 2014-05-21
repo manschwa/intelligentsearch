@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Description of IndexObject_Seminar
- *
- * @author intelec
- */
 class IndexObject_Semtree {
 
     const RATING_SEMTREE = 0.7;
