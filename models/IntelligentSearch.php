@@ -18,10 +18,16 @@ class IntelligentSearch {
     public $resultTypes = array();
     public $time;
     public $count;
+    
+    public $resultsPerPage = 30;
 
     public function __construct($query) {
         $this->query = $query;
         $this->search();
+    }
+    
+    public function resultPage($page = 0) {
+        return array_slice($this->results, $page * $this->resultsPerPage, $this->resultsPerPage);
     }
 
     private function search() {
@@ -29,7 +35,7 @@ class IntelligentSearch {
         $time = microtime(1);
 
         $search = '%' . $this->query . '%';
-        $statement = DBManager::get()->prepare("SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? ORDER BY relevance DESC LIMIT 30");
+        $statement = DBManager::get()->prepare("SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? ORDER BY relevance DESC");
         $statement->execute(array($search));
         while ($result = $statement->fetch(PDO::FETCH_ASSOC)) {
             $object = SearchObject::find($result['object_id']);
@@ -38,6 +44,7 @@ class IntelligentSearch {
                     return "<span class='result'>$hit[0]</span>";
                 }, $result['text']);
                 $this->results[] = $object;
+                $this->resultTypes[$object->type]++;
                 $this->count++;
             }
         }

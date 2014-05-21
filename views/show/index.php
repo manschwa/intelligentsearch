@@ -7,7 +7,7 @@
 <? if ($search->results): ?>
     <p><?= sprintf(_('%s Ergebnisse in %s Sekunden'), $search->count, round($search->time, 4)) ?></p>
     <section class="search_results">
-        <? foreach ($search->results as $result): ?>
+        <? foreach ($search->resultPage() as $result): ?>
             <article>
                 <a href="<?= URLHelper::getLink($result->link) ?>"><?= $result->title ?></a>
                 <?= $result->info ?>
