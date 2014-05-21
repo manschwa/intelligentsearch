@@ -18,4 +18,8 @@ class IndexObject_User {
         return _('Benutzer');
     }
 
+    public static function isVisible($object) {
+        return DBManager::get()->fetchOne("SELECT 1 FROM user_visibility WHERE user_id = ? AND search = 1", array($object->range_id));
+    }
+
 }

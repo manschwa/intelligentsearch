@@ -17,5 +17,9 @@ class IndexObject_Institute {
     public static function getName() {
         return _('Einrichtung');
     }
+    
+    public static function isVisible($object) {
+        return true;
+    }
 
 }

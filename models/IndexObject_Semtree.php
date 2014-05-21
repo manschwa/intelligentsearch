@@ -18,4 +18,8 @@ class IndexObject_Semtree {
         return _('Vorlesungsverzeichnis');
     }
 
+    public static function isVisible($object) {
+        return true;
+    }
+
 }
