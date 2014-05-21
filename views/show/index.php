@@ -1,8 +1,11 @@
 <form class="studip_form">
-    <input type="text" name="search" size="50" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
-    <input type="image" src
-    <?= \Studip\Button::create(_('Suchen')) ?>
+    <input type="text" style="display: inline;" name="search" size="50" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
+    <input type="image" src="<?= Assets::image_path('icons/24/blue/search.png') ?>">
 </form>
+
+<? if ($search->error): ?>
+    <p><?= htmlReady($search->error) ?></p>
+<? endif; ?>
 
 
 <? if ($search->results): ?>
@@ -15,4 +18,5 @@
         <? endforeach; ?>
     </section>
     <?
+
  endif;

@@ -18,14 +18,19 @@ class IntelligentSearch {
     public $resultTypes = array();
     public $time;
     public $count;
-    
+    public $error;
     public $resultsPerPage = 30;
+    public $minLength = 4;
 
     public function __construct($query) {
         $this->query = $query;
-        $this->search();
+        if (strlen($query) >= $this->minLength) {
+            $this->search();
+        } else {
+            $this->error = _('Der eingegebene Suchbegriff ist zu kurz');
+        }
     }
-    
+
     public function resultPage($page = 0) {
         return array_slice($this->results, $page * $this->resultsPerPage, $this->resultsPerPage);
     }
@@ -44,7 +49,7 @@ class IntelligentSearch {
                     return "<span class='result'>$hit[0]</span>";
                 }, $result['text']);
                 $this->results[] = $object;
-                $this->resultTypes[$object->type]++;
+                $this->resultTypes[$object->type] ++;
                 $this->count++;
             }
         }
