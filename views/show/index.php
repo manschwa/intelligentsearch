@@ -1,10 +1,14 @@
 <form class="studip_form">
     <input type="text" style="display: inline;" name="search" size="50" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
-    <input type="image" src="<?= Assets::image_path('icons/24/blue/search.png') ?>">
+    <input type="image" src="<?= Assets::image_path('icons/20/blue/search.png') ?>">
 </form>
 
-<? if ($search->error): ?>
-    <p><?= htmlReady($search->error) ?></p>
+<? if ($search->query): ?>
+    <? if ($search->error): ?>
+        <p><?= htmlReady($search->error) ?></p>
+    <? else: ?>
+        <h3><?= sprintf(_('Suchergebnisse für %s'), $search->query) ?></h3>
+    <? endif; ?>
 <? endif; ?>
 
 
@@ -18,5 +22,6 @@
         <? endforeach; ?>
     </section>
     <?
+
 
  endif;

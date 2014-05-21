@@ -14,18 +14,27 @@ class ShowController extends StudipController {
     }
 
     public function index_action() {
+        
+        // Create search
+        $this->setInfoBoxImage('sidebar/search-sidebar.png');
+        $form = '<form class="studip_form">';
+        $form .= '<input type="text" style="display: inline;" name="search" value="'.Request::get('search').'" placeholder="'._('Suchbegriff').'">';
+        $form .= '</form>';
+        $this->addToInfobox('Suche', $form);
+        
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch(Request::get('search'));
             foreach ($this->search->resultTypes as $type => $results) {
                 $this->addToInfobox('Typen', IntelligentSearch::getTypeName($type)." ($results)");
             }
             $this->addToInfobox(_('Info'), sprintf(_('%s Ergebnisse in %s Sekunden'), $this->search->count, round($this->search->time, 3)));
-            $this->setInfoBoxImage('sidebar/search-sidebar.png');
+            
         }
     }
     
     public function fast_action() {
         $this->time = IndexManager::sqlIndex();
+        $this->render_nothing();
     }
 
     // customized #url_for for plugins
