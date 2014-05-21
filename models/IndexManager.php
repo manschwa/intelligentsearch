@@ -40,5 +40,9 @@ class IndexManager {
     public static function relevance($base, $modifier) {
         return "pow( $base , ((UNIX_TIMESTAMP() - $modifier ) / 31556926)) as relevance";
     }
+    
+    public static function createJoin($on) {
+        return " JOIN search_object ON (search_object.range_id = $on) ";
+    }
 
 }
