@@ -20,7 +20,7 @@ class IndexManager {
             $indexClass::fullIndex();
             SearchIndex::finishUpdate();
         }
-        return time()-$time;
+        return time() - $time;
     }
 
     public static function update() {
@@ -50,6 +50,37 @@ class IndexManager {
     public static function isExhausted() {
         return (time() == $GLOBALS['intelligente_suche']['time']) ||
                 (time() - $GLOBALS['intelligente_suche']['time']) / ini_get('max_execution_time') > 0.8;
+    }
+
+    public static function fast() {
+        $time = time();
+        DBManager::get()->query('TRUNCATE TABLE search_object');
+        DBManager::get()->query('TRUNCATE TABLE search_index');
+        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
+            $indexClass = basename($indexFile, ".php");
+            SearchIndex::prepareUpdate();
+            $indexClass::fast();
+            SearchIndex::finishUpdate();
+        }
+        return time() - $time;
+    }
+    
+    /**
+     * Creates search objects with an sql select
+     * (range_id, type, title, link)
+     * 
+     * @param SQL SQL for the input
+     */
+    public static function createObjects($sql) {
+        DBManager::get()->query("INSERT INTO search_object (range_id, type, title, link) ($sql)");
+    }
+    
+    public static function createIndex($sql) {
+         DBManager::get()->query("INSERT INTO search_index (object_id, text, relevance) ($sql)");
+    }
+    
+    public static function relevance($base, $modifier) {
+        return "pow( $base , ((UNIX_TIMESTAMP() - $modifier ) / 31556926)) as relevance";
     }
 
 }

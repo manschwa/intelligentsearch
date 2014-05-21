@@ -22,6 +22,10 @@ class ShowController extends StudipController {
             $this->time = microtime(1)-$time;
         }
     }
+    
+    public function fast_action() {
+        $this->time = IndexManager::fast();
+    }
 
     public function create_action($type = null) {
         if ($type) {

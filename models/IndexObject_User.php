@@ -9,6 +9,12 @@ class IndexObject_User {
 
     const RATING_USER = 1.0;
 
+    public static function fast() {
+        $db = DBManager::get();
+        $db->query("INSERT INTO search_object (range_id, type, title, link) (SELECT user_id, 'user', CONCAT_WS(' ', Vorname, Nachname) as title, CONCAT('about.php?username=', user_id) as link FROM auth_user_md5)");
+        $db->query("INSERT INTO search_index (object_id, text, relevance) (SELECT object_id, CONCAT_WS(' ', Vorname, Nachname), pow(" . self::RATING_USER . ", ((UNIX_TIMESTAMP()-last_lifesign)/31556926)) as relevance FROM auth_user_md5 JOIN user_online USING (user_id) JOIN search_object ON (user_id = range_id))");
+    }
+
     public static function fullIndex() {
         $users = DBManager::get()->query('SELECT * FROM auth_user_md5');
         while ($user = $users->fetch(PDO::FETCH_ASSOC)) {
