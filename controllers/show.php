@@ -23,9 +23,11 @@ class ShowController extends StudipController {
         $this->addToInfobox('Suche', $form);
         
         if (Request::submitted('search')) {
-            $this->search = new IntelligentSearch(Request::get('search'));
+            $this->search = new IntelligentSearch(Request::get('search'), Request::get('filter'));
+            
+            $this->addToInfobox('Typen', "<a href='".URLHelper::getURL('', array("search" => $this->search->query))."'>"._('Alle')." ({$this->search->count})</a>", !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
             foreach ($this->search->resultTypes as $type => $results) {
-                $this->addToInfobox('Typen', "<a href='".URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type))."'>".IntelligentSearch::getTypeName($type)." ($results)</a>");
+                $this->addToInfobox('Typen', "<a href='".URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type))."'>".IntelligentSearch::getTypeName($type)." ($results)</a>", $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
             }
             $this->addToInfobox(_('Info'), sprintf(_('%s Ergebnisse in %s Sekunden'), $this->search->count, round($this->search->time, 3)));
             

@@ -22,8 +22,9 @@ class IntelligentSearch {
     public $resultsPerPage = 30;
     public $minLength = 4;
 
-    public function __construct($query) {
+    public function __construct($query, $filter = null) {
         $this->query = $query;
+        $this->filter = $filter;
         if (strlen($query) >= $this->minLength) {
             $this->search();
         } else {
@@ -48,7 +49,9 @@ class IntelligentSearch {
                 $object->info = preg_replace_callback("/$this->query/i", function($hit) {
                     return "<span class='result'>$hit[0]</span>";
                 }, $result['text']);
-                $this->results[] = $object;
+                if (!$this->filter || $this->filter == $object->type) {
+                    $this->results[] = $object;
+                }
                 $this->resultTypes[$object->type] ++;
                 $this->count++;
             }
