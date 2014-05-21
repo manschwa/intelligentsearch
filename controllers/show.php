@@ -25,7 +25,7 @@ class ShowController extends StudipController {
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch(Request::get('search'));
             foreach ($this->search->resultTypes as $type => $results) {
-                $this->addToInfobox('Typen', IntelligentSearch::getTypeName($type)." ($results)");
+                $this->addToInfobox('Typen', "<a href='".URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type))."'>".IntelligentSearch::getTypeName($type)." ($results)</a>");
             }
             $this->addToInfobox(_('Info'), sprintf(_('%s Ergebnisse in %s Sekunden'), $this->search->count, round($this->search->time, 3)));
             

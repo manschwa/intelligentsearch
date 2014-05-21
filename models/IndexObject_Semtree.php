@@ -7,7 +7,7 @@
  */
 class IndexObject_Semtree {
 
-    const RATING_SEMTREE = 1.0;
+    const RATING_SEMTREE = 0.7;
 
     public static function sqlIndex() {
         IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, CONCAT('sem_portal.php?start_item_id',sem_tree_id) FROM sem_tree");
