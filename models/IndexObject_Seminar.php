@@ -25,5 +25,9 @@ JOIN user_info i ON (u.user_id = i.user_id)");
         IndexManager::createIndex("SELECT object_id, Beschreibung, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Beschreibung != ''");
         IndexManager::createIndex("SELECT object_id, Sonstiges, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Sonstiges != ''");
     }
+    
+    public static function isVisible($object) {
+        return DBManager::get()->fetchOne("SELECT 1 FROM seminare WHERE seminar_id = ? AND visible = 1", array($object->range_id));
+    }
 
 }

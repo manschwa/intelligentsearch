@@ -29,7 +29,12 @@ class SearchObject extends SimpleORMap
         parent::__construct($id);
     }
     
-    public static function deleteType($type) {
+    public static function find($id) {
+        $object = parent::find($id);
+        return SearchManager::isVisible($object) ? $object : null;
+    }
+
+        public static function deleteType($type) {
         $statment = DBManager::get()->prepare('DELETE search_object,search_index FROM search_object LEFT JOIN search_index USING (object_id) WHERE type = ?');
         $statment->execute(array($type));
     }
