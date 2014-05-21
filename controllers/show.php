@@ -30,11 +30,19 @@ class ShowController extends StudipController {
             $this->addToInfobox(_('Info'), sprintf(_('%s Ergebnisse in %s Sekunden'), $this->search->count, round($this->search->time, 3)));
             
         }
+        
+        // Root may update index
+        if ($GLOBALS['perm']->have_perm('root')) {
+             $this->addToInfobox(_('Aktionen'), "<a href='".$this->url_for('show/fast')."'>Indizieren</a>");
+             $this->addToInfobox(_('Aktionen'), "Achtung! Dauert etwas!");
+        }
+        
     }
     
     public function fast_action() {
+        if ($GLOBALS['perm']->check('root'));
         $this->time = IndexManager::sqlIndex();
-        $this->render_nothing();
+        $this->redirect('show/index');
     }
 
     // customized #url_for for plugins
