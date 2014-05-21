@@ -1,11 +1,11 @@
 <form class="studip_form">
     <input type="text" name="search" size="50" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
+    <input type="image" src
     <?= \Studip\Button::create(_('Suchen')) ?>
 </form>
 
 
 <? if ($search->results): ?>
-    <p><?= sprintf(_('%s Ergebnisse in %s Sekunden'), $search->count, round($search->time, 4)) ?></p>
     <section class="search_results">
         <? foreach ($search->resultPage() as $result): ?>
             <article>
