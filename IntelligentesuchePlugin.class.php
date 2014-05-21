@@ -11,7 +11,7 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         parent::__construct();
 
         $navigation = new AutoNavigation(_('Suche'));
-        $navigation->setURL(PluginEngine::GetURL($this, array(), 'show'));
+        $navigation->setURL(PluginEngine::GetURL($this, array(), 'show/index'));
         Navigation::addItem('/search/suche', $navigation);
     }
 

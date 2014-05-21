@@ -1,5 +1,7 @@
 pluginname=Intelligente Suche
 pluginclassname=IntelligentesuchePlugin
-origin=intelec
-version=0.1a
+origin=Unknown
+version=0.2
 studipMinVersion=3.0
+dbscheme=assets/install.sql
+uninstalldbscheme=assets/uninstall.sql
