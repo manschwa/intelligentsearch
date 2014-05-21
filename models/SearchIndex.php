@@ -17,16 +17,6 @@
  */
 class SearchIndex {
 
-    public static function index($object_id, $text, $relevance = 0.5) {
-        $stmt = DBManager::get()->prepare('INSERT INTO search_index (object_id, text, relevance) VALUES (?,?,?)');
-        $stmt->execute(array($object_id, $text, $relevance));
-    }
-    
-    public static function deleteObject($object_id) {
-        $stmt = DBManager::get()->prepare('DELETE FROM search_index WHERE object_id = ?');
-        $stmt->execute(array($object_id));        
-    }
-
     public static function search($string) {
 
         $search = '%' . $string . '%';

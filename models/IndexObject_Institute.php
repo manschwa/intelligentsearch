@@ -9,7 +9,7 @@ class IndexObject_Institute {
 
     const RATING_INSTITUTE = 1.1;
     
-    public static function fast() {}
+    public static function sqlIndex() {}
 
     public static function fullIndex() {
         $institute = DBManager::get()->query('SELECT * FROM Institute');

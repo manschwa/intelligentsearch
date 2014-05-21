@@ -24,7 +24,7 @@ class ShowController extends StudipController {
     }
     
     public function fast_action() {
-        $this->time = IndexManager::fast();
+        $this->time = IndexManager::sqlIndex();
     }
 
     public function create_action($type = null) {
