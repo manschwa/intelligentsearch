@@ -15,11 +15,7 @@ class ShowController extends StudipController {
 
     public function index_action() {
         if (Request::submitted('search')) {
-            $time = microtime(1);
-            $this->query = Request::get('search');
-            $this->results = SearchIndex::search($this->query);
-            $this->counter = SearchIndex::count($this->query);
-            $this->time = microtime(1)-$time;
+            $this->search = new IntelligentSearch(Request::get('search'));
         }
     }
     
