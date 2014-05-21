@@ -65,4 +65,9 @@ class IntelligentSearch {
         return $class::isVisible($object);
     }
 
+    public static function getTypeName($key) {
+        $class = "IndexObject_$key";
+        return $class::getName();
+    }
+
 }

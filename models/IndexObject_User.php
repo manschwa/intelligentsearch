@@ -14,4 +14,8 @@ class IndexObject_User {
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname), " . IndexManager::relevance(self::RATING_USER, 'last_lifesign') . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN search_object ON (user_id = range_id)");
     }
 
+    public static function getName() {
+        return _('Benutzer');
+    }
+
 }

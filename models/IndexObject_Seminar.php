@@ -6,7 +6,7 @@
  * @author intelec
  */
 class IndexObject_Seminar {
-
+    
     const RATING_SEMINAR = 0.8;
     const RATING_SEMINAR_DOZENT = 0.75;
     const RATING_SEMINAR_SUBTITLE = 0.7;
@@ -28,6 +28,10 @@ JOIN user_info i ON (u.user_id = i.user_id)");
     
     public static function isVisible($object) {
         return DBManager::get()->fetchOne("SELECT 1 FROM seminare WHERE seminar_id = ? AND visible = 1", array($object->range_id));
+    }
+    
+    public static function getName() {
+        return _('Veranstaltungen');
     }
 
 }

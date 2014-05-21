@@ -14,4 +14,8 @@ class IndexObject_Semtree {
         IndexManager::createIndex("SELECT object_id, name, " . self::RATING_SEMTREE . " FROM sem_tree " . IndexManager::createJoin('sem_tree_id'));
     }
 
+    public static function getName() {
+        return _('Vorlesungsverzeichnis');
+    }
+
 }

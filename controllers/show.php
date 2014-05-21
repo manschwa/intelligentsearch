@@ -17,7 +17,7 @@ class ShowController extends StudipController {
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch(Request::get('search'));
             foreach ($this->search->resultTypes as $type => $results) {
-                $this->addToInfobox('Typen', "$type ($results)");
+                $this->addToInfobox('Typen', IntelligentSearch::getTypeName($type)." ($results)");
             }
             $this->addToInfobox(_('Info'), sprintf(_('%s Ergebnisse in %s Sekunden'), $this->search->count, round($this->search->time, 3)));
             $this->setInfoBoxImage('sidebar/search-sidebar.png');
