@@ -79,7 +79,7 @@ class IntelligentSearch {
     public static function getInfo($object, $query) {
         // Cut down if info is to long
         if (strlen($object['text']) > 200) {
-            $object['text'] = substr($object['text'], strpos($object['text'], $query, true) - 100, 200);
+            $object['text'] = substr($object['text'], max(array(0, stripos($object['text'], $query, true) - 100)), 200);
         }
 
         return preg_replace_callback("/$query/i", function($hit) {
