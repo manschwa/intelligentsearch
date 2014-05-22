@@ -18,7 +18,8 @@ class ShowController extends StudipController {
         $this->createSidebar();
 
         if (Request::submitted('search')) {
-            $this->search = new IntelligentSearch(Request::get('search'), Request::get('filter'));
+            $this->search = new IntelligentSearch();
+            $this->search->query(Request::get('search'), Request::get('filter'));
             $this->addSearchSidebar();
         }
     }

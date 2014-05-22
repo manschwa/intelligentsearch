@@ -1,6 +1,6 @@
 <?php
 
-class IntelligentSearch {
+class IntelligentSearch extends SearchType {
 
     public $query;
     public $results = array();
@@ -11,7 +11,7 @@ class IntelligentSearch {
     public $resultsPerPage = 30;
     public $minLength = 4;
 
-    public function __construct($query, $filter = null) {
+    public function query($query, $filter = null) {
         $this->query = $query;
         $this->filter = $filter;
         if (strlen($query) >= $this->minLength) {
@@ -29,9 +29,7 @@ class IntelligentSearch {
         // Timecapture
         $time = microtime(1);
 
-        $search = '%' . str_replace('%', '|%', $this->query) . '%';
-        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM (SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC) as sr JOIN search_object USING (object_id)" . self::buildWhere());
-        $statement->execute(array($search));
+        $statement = $this->getResultSet();
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
 
             if (!$this->filter || $this->filter == $object['type']) {
@@ -43,6 +41,13 @@ class IntelligentSearch {
         }
 
         $this->time = microtime(1) - $time;
+    }
+
+    private function getResultSet($limit = null) {
+        $search = '%' . str_replace('%', '|%', $this->query) . '%';
+        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM (SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC) as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
+        $statement->execute(array($search));
+        return $statement;
     }
 
     public static function buildWhere() {
@@ -85,6 +90,20 @@ class IntelligentSearch {
         return preg_replace_callback("/$query/i", function($hit) {
             return "<span class='result'>$hit[0]</span>";
         }, htmlReady($object['text']));
+    }
+
+    public function includePath() {
+        return __FILE__;
+    }
+
+    public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0) {
+        parent::getResults($keyword, $contextual_data, $limit, $offset);
+        $this->query = $keyword;
+        $stmt = $this->getResultSet(10);
+        while ($object = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $result[] = array($object['id'], $object['title']);
+        }
+        return $result;
     }
 
 }

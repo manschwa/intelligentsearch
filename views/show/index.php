@@ -1,3 +1,7 @@
+<?= QuickSearch::get("seminar", new IntelligentSearch())
+    ->setInputStyle("width: 240px")
+    ->render(); ?>
+
 <? if ($search->query): ?>
     <? if ($search->error): ?>
         <p><?= htmlReady($search->error) ?></p>
