@@ -9,17 +9,24 @@
  */
 class IndexManager {
 
-    public static function sqlIndex() {
+    public static function sqlIndex($restriction = null) {
         set_time_limit(3600);
         $time = time();
-        DBManager::get()->query('TRUNCATE TABLE search_object');
-        DBManager::get()->query('TRUNCATE TABLE search_index');
+        if ($restriction) {
+            DBManager::get()->execute('DELETE search_object,search_index FROM search_object JOIN search_index USING (object_id) WHERE type LIKE ?', array($restriction));
+        } else {
+            DBManager::get()->query('TRUNCATE TABLE search_object');
+            DBManager::get()->query('TRUNCATE TABLE search_index');
+        }
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
-            $indexClass = basename($indexFile, ".php");
-            DBManager::get()->query("ALTER TABLE search_index DISABLE KEYS");
-            $indexClass::sqlIndex();
-            DBManager::get()->query("ALTER TABLE search_index ENABLE KEYS");
-            DBManager::get()->query("OPTIMIZE TABLE search_index");
+            $type = explode('_', $indexFile);
+            if (!$restriction || stripos(array_pop($type), $restriction) !== false) {
+                $indexClass = basename($indexFile, ".php");
+                DBManager::get()->query("ALTER TABLE search_index DISABLE KEYS");
+                $indexClass::sqlIndex();
+                DBManager::get()->query("ALTER TABLE search_index ENABLE KEYS");
+                DBManager::get()->query("OPTIMIZE TABLE search_index");
+            }
         }
         return time() - $time;
     }

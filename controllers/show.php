@@ -23,9 +23,9 @@ class ShowController extends StudipController {
         }
     }
 
-    public function fast_action() {
+    public function fast_action($restriction = null) {
         if ($GLOBALS['perm']->check('root'));
-        $this->time = IndexManager::sqlIndex();
+        $this->time = IndexManager::sqlIndex($restriction);
         $this->redirect('show/index');
     }
 
