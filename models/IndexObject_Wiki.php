@@ -22,11 +22,11 @@ FROM wiki JOIN search_object ON (search_object.range_id = wiki.range_id AND keyw
     }
     
     public static function link($object) {
-        return "plugins.php/coreforum/index/index/{$object['range_id']}?cid={$object['range2']}";
+        return "wiki.php?cid={$object['range_id']}&keyword={$object['title']}";
     }
     
     public static function getCondition() {
-        return "EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range2 AND user_id = '{$GLOBALS['user']->id}')";
+        return "EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range_id AND user_id = '{$GLOBALS['user']->id}')";
     }
 
 }
