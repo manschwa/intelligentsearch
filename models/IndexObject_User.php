@@ -14,7 +14,7 @@ class IndexObject_User {
     }
 
     public static function link($object) {
-        return 'about.php?username=' . $object['range2'];
+        return 'dispatch.php/profile?username=' . $object['range2'];
     }
 
     public static function getCondition() {
