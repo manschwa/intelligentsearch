@@ -97,11 +97,15 @@ class IntelligentSearch extends SearchType {
     }
 
     public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0) {
-        parent::getResults($keyword, $contextual_data, $limit, $offset);
+        
+        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
+            include $indexFile;
+        }
+        
         $this->query = $keyword;
         $stmt = $this->getResultSet(10);
         while ($object = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $result[] = array($object['id'], $object['title']);
+            $result[] = array(self::getLink($object), $object['title']);
         }
         return $result;
     }
