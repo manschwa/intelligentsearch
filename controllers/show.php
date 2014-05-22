@@ -36,7 +36,7 @@ class ShowController extends StudipController {
         $formWidget = new SidebarWidget();
         $formWidget->setTitle(_('Suche'));
         $form = '<form class="studip_form">';
-        $form .= '<input type="text" style="display: inline;" name="search" size="36" ""value="' . Request::get('search') . '" placeholder="' . _('Suchbegriff') . '">';
+        $form .= '<input type="text" style="display: inline; width: 230px;" name="search" value="' . Request::get('search') . '" placeholder="' . _('Suchbegriff') . '">';
         $form .= '</form>';
         $formWidget->addElement(new WidgetElement($form));
         $sidebar->addWidget($formWidget);
