@@ -12,7 +12,7 @@
         <? foreach ($search->resultPage() as $result): ?>
             <article>
                 <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
-                <?= $result['text'] ?>
+                <?= IntelligentSearch::getInfo($result, $search->query) ?>
             </article>
         <? endforeach; ?>
     </section>

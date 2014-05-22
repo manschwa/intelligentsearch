@@ -30,18 +30,15 @@ class IntelligentSearch {
         $time = microtime(1);
 
         $search = '%' . str_replace('%', '|%', $this->query) . '%';
-        //echo "SELECT search_object.* FROM (SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC) as sr JOIN search_object USING (object_id) WHERE " . self::buildWhere();die;
         $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM (SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC) as sr JOIN search_object USING (object_id)" . self::buildWhere());
         $statement->execute(array($search));
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $object['info'] = preg_replace_callback("/$this->query/i", function($hit) {
-                return "<span class='result'>$hit[0]</span>";
-            }, htmlReady($object['text']));
+
             if (!$this->filter || $this->filter == $object['type']) {
                 $object['link'] = self::getLink($object);
                 $this->results[] = $object;
             }
-            $this->resultTypes[$object['type']]++;
+            $this->resultTypes[$object['type']] ++;
             $this->count++;
         }
 
@@ -57,14 +54,14 @@ class IntelligentSearch {
             $typename = explode('_', $indexClass);
             $typename = strtolower($typename[1]);
             if (method_exists($indexClass, 'getCondition')) {
-            $condititions[] = " (search_object.type = '$typename' AND " . $indexClass::getCondition() . ") ";
+                $condititions[] = " (search_object.type = '$typename' AND " . $indexClass::getCondition() . ") ";
             } else {
                 $condititions[] = " (search_object.type = '$typename') ";
             }
         }
-        return " WHERE ".join(' OR ', $condititions);
+        return " WHERE " . join(' OR ', $condititions);
     }
-    
+
     public static function getTypeName($key) {
         $class = self::getClass($key);
         return $class::getName();
@@ -77,6 +74,17 @@ class IntelligentSearch {
     public static function getLink($object) {
         $class = self::getClass($object['type']);
         return $class::link($object);
+    }
+
+    public static function getInfo($object, $query) {
+        // Cut down if info is to long
+        if (strlen($object['text']) > 200) {
+            $object['text'] = substr($object['text'], strpos($object['text'], $query, true) - 100, 200);
+        }
+
+        return preg_replace_callback("/$query/i", function($hit) {
+            return "<span class='result'>$hit[0]</span>";
+        }, htmlReady($object['text']));
     }
 
 }
