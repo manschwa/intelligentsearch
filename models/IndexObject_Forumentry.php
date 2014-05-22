@@ -12,10 +12,6 @@ class IndexObject_Forumentry {
     public static function getName() {
         return _('Foreneintrag');
     }
-
-    public static function isVisible($object) {
-        return true;
-    }
     
     public static function link($object) {
         return "plugins.php/coreforum/index/index/{$object['range_id']}?cid={$object['range2']}";

@@ -5,7 +5,7 @@ class IndexObject_Semtree {
     const RATING_SEMTREE = 0.7;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, CONCAT('sem_portal.php?start_item_id',sem_tree_id) FROM sem_tree");
+        IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, null,null FROM sem_tree");
         IndexManager::createIndex("SELECT object_id, name, " . self::RATING_SEMTREE . " FROM sem_tree " . IndexManager::createJoin('sem_tree_id'));
     }
 
@@ -13,8 +13,8 @@ class IndexObject_Semtree {
         return _('Vorlesungsverzeichnis');
     }
 
-    public static function isVisible($object) {
-        return true;
+    public static function link($object) {
+        return "sem_portal.php?start_item_id={$object['range_id']}";
     }
 
 }

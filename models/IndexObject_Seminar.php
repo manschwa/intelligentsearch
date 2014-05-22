@@ -8,7 +8,7 @@ class IndexObject_Seminar {
     const RATING_SEMINAR_OTHER = 0.6;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT seminar_id, 'seminar', CONCAT_WS(' ', sd.name, s.Veranstaltungsnummer, s.name) as title, CONCAT('dispatch.php/course/overview?cid=',s.seminar_id) as link FROM seminare s JOIN semester_data sd ON s.start_time BETWEEN sd.beginn AND sd.ende");
+        IndexManager::createObjects("SELECT seminar_id, 'seminar', CONCAT_WS(' ', sd.name, s.Veranstaltungsnummer, s.name), null,null FROM seminare s JOIN semester_data sd ON s.start_time BETWEEN sd.beginn AND sd.ende");
         IndexManager::createIndex("SELECT object_id, Name, " . IndexManager::relevance(self::RATING_SEMINAR, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id)");
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ',i.title_front, a.Vorname, a.Nachname), " . IndexManager::relevance(self::RATING_SEMINAR_DOZENT, 'start_time') . "
 FROM seminare s 
@@ -27,6 +27,10 @@ JOIN user_info i ON (u.user_id = i.user_id)");
     
     public static function getName() {
         return _('Veranstaltungen');
+    }
+    
+    public static function link($object) {
+        return "dispatch.php/course/overview?cid={$object['range_id']}";
     }
 
 }
