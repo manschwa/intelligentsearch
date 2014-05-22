@@ -18,6 +18,7 @@
 class SearchObject extends SimpleORMap {
 
     public $info;
+    public $link;
 
     public function __construct($id = null) {
         $this->db_table = 'search_object';

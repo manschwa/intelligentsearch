@@ -11,8 +11,8 @@
     <section class="search_results">
         <? foreach ($search->resultPage() as $result): ?>
             <article>
-                <a href="<?= URLHelper::getLink($result->link) ?>"><?= $result->title ?></a>
-                <?= $result->info ?>
+                <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
+                <?= $result['text'] ?>
             </article>
         <? endforeach; ?>
     </section>
