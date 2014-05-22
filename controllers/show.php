@@ -56,7 +56,7 @@ class ShowController extends StudipController {
         $widget->setTitle(_('Ergebnisse'));
         $widget->addLink(_('Alle') . " ({$this->search->count})", URLHelper::getURL('', array("search" => $this->search->query)), !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
         foreach ($this->search->resultTypes as $type => $results) {
-            //$widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+            $widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
         }
         $sidebar->addWidget($widget);
     }

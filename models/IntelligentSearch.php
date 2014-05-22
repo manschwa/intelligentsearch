@@ -64,26 +64,18 @@ class IntelligentSearch {
         }
         return " WHERE ".join(' OR ', $condititions);
     }
-
-    public static function isVisible($object) {
-        if ($GLOBALS['perm']->have_perm('root')) {
-            return true;
-        }
-        $class = self::getClass($object['type']);
-        return $class::isVisible($object);
-    }
-
+    
     public static function getTypeName($key) {
         $class = self::getClass($key);
         return $class::getName();
     }
 
-    private static function getClass($object) {
-        return "IndexObject_" . ucfirst($object['type']);
+    private static function getClass($type) {
+        return "IndexObject_" . ucfirst($type);
     }
 
     public static function getLink($object) {
-        $class = self::getClass($object);
+        $class = self::getClass($object['type']);
         return $class::link($object);
     }
 
