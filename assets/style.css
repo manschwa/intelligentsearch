@@ -6,6 +6,10 @@ section.search_results article a {
   display: block;
   font-size: 1.4em;
 }
+section.search_results article p.result_type {
+  margin: 0;
+  color: #a5adb2;
+}
 section.search_results article span.result {
-  background-color: #ffe4ad;
+  background-color: #e7ebf1;
 }
