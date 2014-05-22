@@ -30,7 +30,7 @@ JOIN user_info i ON (u.user_id = i.user_id)");
     }
     
     public static function link($object) {
-        return "dispatch.php/course/overview?cid={$object['range_id']}";
+        return "details.php?sem_id={$object['range_id']}";
     }
 
 }
