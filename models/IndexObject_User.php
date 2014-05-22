@@ -14,7 +14,11 @@ class IndexObject_User {
     }
 
     public static function link($object) {
-        return 'about.php?username='.$object['range2'];
+        return 'about.php?username=' . $object['range2'];
+    }
+
+    public static function getCondition() {
+        return "EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
     }
 
 }
