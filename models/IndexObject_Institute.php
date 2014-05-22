@@ -14,7 +14,7 @@ class IndexObject_Institute {
     }
     
     public static function link($object) {
-        return "institut_main.php?cid={$object->range_id}";
+        return "institut_main.php?cid={$object['range_id']}";
     }
 
 }
