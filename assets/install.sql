@@ -12,9 +12,8 @@ CREATE TABLE `search_object` (
   `range_id` varchar(32) COLLATE latin1_german1_ci NOT NULL DEFAULT '',
   `type` varchar(255) COLLATE latin1_german1_ci NOT NULL DEFAULT '',
   `title` varchar(255) COLLATE latin1_german1_ci NOT NULL DEFAULT '',
-  `link` varchar(255) COLLATE latin1_german1_ci DEFAULT NULL,
-  `mkdate` int(11) DEFAULT NULL,
-  `chdate` int(11) DEFAULT NULL,
+  `range2` varchar(32) COLLATE latin1_german1_ci DEFAULT NULL,
+  `range3` varchar(32) COLLATE latin1_german1_ci DEFAULT NULL,
   PRIMARY KEY (`object_id`),
   KEY `range_id` (`range_id`),
   KEY `type` (`type`)
