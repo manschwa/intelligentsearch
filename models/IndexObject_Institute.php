@@ -12,14 +12,13 @@ class IndexObject_Institute {
     public static function getName() {
         return _('Einrichtung');
     }
-    
+
     public static function link($object) {
         return "institut_main.php?cid={$object['range_id']}";
     }
-    
-        public static function getAvatar() {
-        return null;
-    }
 
+    public static function getAvatar($object) {
+        return InstituteAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
+    }
 
 }

@@ -30,7 +30,7 @@ FROM wiki JOIN search_object ON (search_object.range_id = wiki.range_id AND keyw
     }
 
     public static function getAvatar() {
-        return null;
+        return Assets::img('icons/16/black/wiki.png');
     }
 
 }

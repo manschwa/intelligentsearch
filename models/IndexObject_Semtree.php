@@ -18,7 +18,7 @@ class IndexObject_Semtree {
     }
 
     public static function getAvatar() {
-        return null;
+        return Assets::img('icons/16/black/assessment.png');
     }
 
 }

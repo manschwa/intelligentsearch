@@ -1,7 +1,7 @@
 <?php
 
 class IndexObject_Seminar {
-    
+
     const RATING_SEMINAR = 0.8;
     const RATING_SEMINAR_DOZENT = 0.75;
     const RATING_SEMINAR_SUBTITLE = 0.7;
@@ -20,21 +20,21 @@ JOIN user_info i ON (u.user_id = i.user_id)");
         IndexManager::createIndex("SELECT object_id, Beschreibung, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Beschreibung != ''");
         IndexManager::createIndex("SELECT object_id, Sonstiges, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object ON (seminar_id = range_id) WHERE Sonstiges != ''");
     }
-    
+
     public static function getCondition() {
         return "EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = range_id AND visible = 1) OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range_id AND user_id = '{$GLOBALS['user']->id}')";
     }
-    
+
     public static function getName() {
         return _('Veranstaltungen');
     }
-    
+
     public static function link($object) {
         return "details.php?sem_id={$object['range_id']}";
     }
-    
-            public static function getAvatar() {
-        return null;
+
+    public static function getAvatar($object) {
+        return CourseAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
     }
 
 }
