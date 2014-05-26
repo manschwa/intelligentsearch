@@ -105,9 +105,13 @@ class IntelligentSearch extends SearchType {
         $this->query = $keyword;
         $stmt = $this->getResultSet(10);
         while ($object = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $result[] = array(self::getLink($object), $object['title']);
+            $result[] = array($object['object_id'], $object['title']);
         }
         return $result;
+    }
+    
+    public function getAvatarImageTag($id) {
+        return Assets::img('icons/16/black/forum.png');
     }
 
 }

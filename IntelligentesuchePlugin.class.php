@@ -21,7 +21,7 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         PageLayout::addBodyElements(QuickSearch::get("seminar", new IntelligentSearch())
                 ->setAttributes(array("placeholder" => _(Suchen)))
                 ->setInputClass("quicksearchbox intelligentsearch")
-                ->fireJSFunctionOnSelect('function (loc, name) {window.location = STUDIP.URLHelper.getURL(loc)}')
+                ->fireJSFunctionOnSelect('function (loc, name) {window.location = STUDIP.URLHelper.getURL("plugins.php/intelligentesucheplugin/show/open/"+loc)}')
                 ->render());
     }
 
