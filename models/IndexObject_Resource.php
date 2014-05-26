@@ -18,5 +18,9 @@ class IndexObject_Resource {
     public static function link($object) {
         return "resources.php?open_level={$object['range_id']}";
     }
+    
+            public static function getAvatar() {
+        return null;
+    }
 
 }

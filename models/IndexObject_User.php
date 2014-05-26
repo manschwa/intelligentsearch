@@ -21,4 +21,7 @@ class IndexObject_User {
         return "EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
     }
 
+            public static function getAvatar() {
+        return null;
+    }
 }

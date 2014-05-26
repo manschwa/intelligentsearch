@@ -111,7 +111,11 @@ class IntelligentSearch extends SearchType {
     }
     
     public function getAvatarImageTag($id) {
-        return Assets::img('icons/16/black/forum.png');
+        $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
+        $stmt->execute(array($id));
+        $object = $stmt->fetch(PDO::FETCH_ASSOC);
+        $class = self::getClass($object['type']);
+        return $class::getAvatar($object);
     }
 
 }

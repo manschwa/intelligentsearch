@@ -16,5 +16,10 @@ class IndexObject_Institute {
     public static function link($object) {
         return "institut_main.php?cid={$object['range_id']}";
     }
+    
+        public static function getAvatar() {
+        return null;
+    }
+
 
 }

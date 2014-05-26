@@ -17,4 +17,8 @@ class IndexObject_Semtree {
         return "sem_portal.php?start_item_id={$object['range_id']}";
     }
 
+    public static function getAvatar() {
+        return null;
+    }
+
 }

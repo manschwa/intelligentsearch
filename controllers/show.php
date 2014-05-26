@@ -25,7 +25,7 @@ class ShowController extends StudipController {
     }
 
     public function open_action($id) {
-        $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ?');
+        $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
         $stmt->execute(array($id));
         $location = $GLOBALS['ABSOLUTE_URI_STUDIP'].IntelligentSearch::getLink($stmt->fetch(PDO::FETCH_ASSOC));
         header("location: $location");die;
