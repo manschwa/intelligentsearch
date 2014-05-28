@@ -51,7 +51,7 @@ class IndexManager {
     }
 
     public static function createJoin($on) {
-        return " JOIN search_object ON (search_object.range_id = $on) ";
+        return " JOIN search_object_temp ON (search_object_temp.range_id = $on) ";
     }
 
 }
