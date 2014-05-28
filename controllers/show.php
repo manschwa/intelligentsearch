@@ -14,6 +14,7 @@ class ShowController extends StudipController {
     }
 
     public function index_action() {
+        $this->infobox_content = array();
 
         $this->createSidebar();
 
@@ -22,6 +23,8 @@ class ShowController extends StudipController {
             $this->search->query(Request::get('search'), Request::get('filter'));
             $this->addSearchSidebar();
         }
+
+        $this->infobox = array('picture' => 'infobox/board2.jpg', 'content' => $this->infobox_content); // TODO Bild
     }
 
     public function open_action($id) {
@@ -38,35 +41,44 @@ class ShowController extends StudipController {
     }
 
     private function createSidebar() {
-        $sidebar = Sidebar::get();
-        $sidebar->setImage('sidebar/search-sidebar.png');
-
-        $formWidget = new SidebarWidget();
-        $formWidget->setTitle(_('Suche'));
         $form = '<form class="studip_form">';
-        $form .= '<input type="text" style="display: inline; width: 230px;" name="search" value="' . Request::get('search') . '" placeholder="' . _('Suchbegriff') . '">';
+        $form .= '<input type="text" style="display: inline; width: 200px;" name="search" value="' . Request::get('search') . '" placeholder="' . _('Suchbegriff') . '">';
         $form .= '</form>';
-        $formWidget->addElement(new WidgetElement($form));
-        $sidebar->addWidget($formWidget);
 
+        $this->infobox_content[] = array ('kategorie' => _('Suche') . ':',
+                                          'eintrag'   => array (
+                                                             array ('text' => $form)
+                                                         )
+                                   );
 
         // Root may update index
         if ($GLOBALS['perm']->have_perm('root')) {
-            $actions = new ActionsWidget();
-            $actions->addLink(_('Indizieren'), $this->url_for('show/fast'));
-            $sidebar->addWidget($actions);
+            $link = '<a href="' . $this->url_for('show/fast') . '">' . _('Indizieren') . '</a>';
+
+            $this->infobox_content[] = array ('kategorie' => _('Aktionen') . ':',
+                                              'eintrag'   => array (
+                                                                 array ('text' => $link)
+                                                             )
+                                       );
         }
     }
 
     private function addSearchSidebar() {
-        $sidebar = Sidebar::get();
-        $widget = new LinksWidget;
-        $widget->setTitle(_('Ergebnisse'));
-        $widget->addLink(_('Alle') . " ({$this->search->count})", URLHelper::getURL('', array("search" => $this->search->query)), !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+        $links = array();
+
+        $links[] = array ('icon' => !$this->search->filter ? 'icons/16/black/arr_1right.png' : '',
+                          'text' => '<a href="' . URLHelper::getURL('', array("search" => $this->search->query)) . '">' . _('Alle') . " ({$this->search->count})" . '</a>'
+                         );
+
         foreach ($this->search->resultTypes as $type => $results) {
-            $widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+            $links[] = array ('icon' => $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '',
+                              'text' => '<a href="' . URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)) . '">' . IntelligentSearch::getTypeName($type) . " ($results)" . '</a>'
+                       );
         }
-        $sidebar->addWidget($widget);
+
+        $this->infobox_content[] = array ('kategorie' => _('Ergebnisse') . ':',
+                                          'eintrag'   => $links
+                                   );
     }
 
     // customized #url_for for plugins
