@@ -1,4 +1,9 @@
 $(document).ready(function() {
+    
+    // Remove old quicksearch
+    $('#quicksearch').children().remove();
+    
+    // Add new quicksearch
     $('#quicksearch').prepend($('.intelligentsearch').keypress(function(event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
         if (keycode == '13') {
