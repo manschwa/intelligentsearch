@@ -7,17 +7,17 @@
 <? endif; ?>
 
 
-    <? if ($search->results): ?>
+<? if ($search->results): ?>
     <section class="search_results">
-            <? foreach ($search->resultPage() as $result): ?>
+        <? foreach ($search->resultPage(Request::get('page')) as $result): ?>
             <article>
                 <? if (!$search->filter): ?>
                     <p class="result_type"><?= IntelligentSearch::getTypeName($result['type']) ?></p>
                 <? endif; ?>
                 <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
-            <?= IntelligentSearch::getInfo($result, $search->query) ?>
+                <?= IntelligentSearch::getInfo($result, $search->query) ?>
             </article>
-    <? endforeach; ?>
+        <? endforeach; ?>
     </section>
-    <?
- endif;
+<? endif; ?>
+<?= $this->render_partial('show/_pagination.php', array('search' => $search)) ?>
