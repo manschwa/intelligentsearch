@@ -13,6 +13,8 @@ class IndexManager {
         set_time_limit(3600);
         $db = DBManager::get();
         $time = time();
+        $db->query('DROP TABLE IF EXISTS search_object_temp');
+        $db->query('DROP TABLE IF EXISTS search_index_temp');
         $db->query('CREATE TABLE search_object_temp LIKE search_object');
         $db->query('CREATE TABLE search_index_temp LIKE search_index');
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
