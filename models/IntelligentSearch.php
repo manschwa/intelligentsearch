@@ -119,11 +119,11 @@ class IntelligentSearch extends SearchType {
     }
     
     public function getPages($current = 1) {
-        return array_slice(range(1, $this->countResultPages()), min(array(max(array(0, $current - 5)), $this->countResultPages() - 10)), 10);
+        return array_slice(range(1, $this->countResultPages() - 1), min(array(max(array(0, $current - 5)), $this->countResultPages() - 10)), 10);
     }
     
     public function countResultPages() {
-        return ceil($this->count / $this->resultsPerPage) - 1;
+        return ceil($this->count / $this->resultsPerPage);
     }
 
 }
