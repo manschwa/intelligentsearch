@@ -16,3 +16,10 @@ section.search_results article span.result {
 .intelligentsearch {
   display: none;
 }
+div.pagination {
+  font-size: 1.4em;
+}
+div.pagination a.current {
+  background-color: #e7ebf1;
+  font-weight: bold;
+}
