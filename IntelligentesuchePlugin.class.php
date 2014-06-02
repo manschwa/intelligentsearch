@@ -14,6 +14,9 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         $navigation->setURL(PluginEngine::GetURL($this, array(), 'show/index'));
         Navigation::addItem('/search/suche', $navigation);
         
+        // Take over search button
+        Navigation::getItem('/search')->setURL(PluginEngine::GetURL($this, array(), 'show/index'));
+        
         PageLayout::addStylesheet($this->getPluginURL() . '/assets/intelligentsearch.css');
         PageLayout::addScript($this->getPluginURL() . '/assets/intelligentsearch.js');
 
