@@ -123,7 +123,7 @@ class IntelligentSearch extends SearchType {
     }
     
     public function countResultPages() {
-        return ceil($this->count / $this->resultsPerPage);
+        return ceil(count($this->results) / $this->resultsPerPage);
     }
 
 }
