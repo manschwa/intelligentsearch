@@ -13,6 +13,9 @@ section.search_results article p.result_type {
 section.search_results article span.result {
   background-color: #e7ebf1;
 }
+section.search_results article div.avatar {
+  display: none;
+}
 .intelligentsearch {
   display: none;
 }

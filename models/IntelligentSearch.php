@@ -97,11 +97,11 @@ class IntelligentSearch extends SearchType {
     }
 
     public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0) {
-        
+
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             include $indexFile;
         }
-        
+
         $this->query = $keyword;
         $stmt = $this->getResultSet(10);
         while ($object = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -109,11 +109,17 @@ class IntelligentSearch extends SearchType {
         }
         return $result;
     }
-    
+
     public function getAvatarImageTag($id) {
-        $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
-        $stmt->execute(array($id));
-        $object = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        // Fetch the object out of the db if we dont already have it
+        if (is_array($id)) {
+            $object = $id;
+        } else {
+            $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
+            $stmt->execute(array($id));
+            $object = $stmt->fetch(PDO::FETCH_ASSOC);
+        }
         $class = self::getClass($object['type']);
         return $class::getAvatar($object);
     }
