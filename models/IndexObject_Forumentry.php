@@ -5,7 +5,7 @@ class IndexObject_Forumentry {
     const RATING_FORUMENTRY = 0.7;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT topic_id, 'forumentry', COALESCE(NULLIF(TRIM(name), ''), '" . _('Forumeintrag') . "'), seminar_id, null FROM forum_entries JOIN seminar_id");
+        IndexManager::createObjects("SELECT topic_id, 'forumentry', CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(forum_entries.name), ''), '" . _('Forumeintrag') . "')), seminar_id, null FROM forum_entries JOIN seminare USING (seminar_id)");
         IndexManager::createIndex("SELECT object_id, content, " . IndexManager::relevance(self::RATING_FORUMENTRY, 'forum_entries.chdate') . " FROM forum_entries" . IndexManager::createJoin('topic_id'));
     }
 
