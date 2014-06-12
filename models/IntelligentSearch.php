@@ -117,5 +117,13 @@ class IntelligentSearch extends SearchType {
         $class = self::getClass($object['type']);
         return $class::getAvatar($object);
     }
+    
+    public function getPages($current = 1) {
+        return array_slice(range(1, $this->countResultPages() - 1), min(array(max(array(0, $current - 5)), $this->countResultPages() - 10)), 10);
+    }
+    
+    public function countResultPages() {
+        return ceil(count($this->results) / $this->resultsPerPage);
+    }
 
 }

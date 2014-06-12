@@ -5,8 +5,8 @@ class IndexObject_User {
     const RATING_USER = 1.0;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT user_id, 'user', CONCAT_WS(' ', Vorname, Nachname), username, null FROM auth_user_md5");
-        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname, username), " . IndexManager::relevance(self::RATING_USER, 'last_lifesign') . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
+        IndexManager::createObjects("SELECT user_id, 'user', CONCAT_WS(' ', title_front, Vorname, Nachname, title_rear), username, null FROM auth_user_md5 JOIN user_info USING (user_id)");
+        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname, CONCAT('(', username, ')')), " . IndexManager::relevance(self::RATING_USER, 'last_lifesign') . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
     }
 
     public static function getName() {
