@@ -43,9 +43,11 @@ class IntelligentSearch extends SearchType {
         $this->time = microtime(1) - $time;
     }
 
-    private function getResultSet($limit = null) {
-        $search = '%' . str_replace('%', '|%', $this->query) . '%';
-        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM (SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC) as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
+    private function getResultSet($limit = null) {     
+        $search = "$this->query*";
+        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
+                . "SELECT distinct(object_id),text FROM search_index WHERE MATCH (text) AGAINST (?  IN BOOLEAN MODE) ORDER BY relevance DESC"
+                . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
         $statement->execute(array($search));
         return $statement;
     }
@@ -97,11 +99,11 @@ class IntelligentSearch extends SearchType {
     }
 
     public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0) {
-        
+
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             include $indexFile;
         }
-        
+
         $this->query = $keyword;
         $stmt = $this->getResultSet(10);
         while ($object = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -109,7 +111,7 @@ class IntelligentSearch extends SearchType {
         }
         return $result;
     }
-    
+
     public function getAvatarImageTag($id) {
         $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
         $stmt->execute(array($id));
@@ -117,11 +119,11 @@ class IntelligentSearch extends SearchType {
         $class = self::getClass($object['type']);
         return $class::getAvatar($object);
     }
-    
+
     public function getPages($current = 1) {
         return array_slice(range(1, $this->countResultPages() - 1), min(array(max(array(0, $current - 5)), $this->countResultPages() - 10)), 10);
     }
-    
+
     public function countResultPages() {
         return ceil(count($this->results) / $this->resultsPerPage);
     }

@@ -17,16 +17,15 @@ class IndexManager {
         $db->query('DROP TABLE IF EXISTS search_index_temp');
         $db->query('CREATE TABLE search_object_temp LIKE search_object');
         $db->query('CREATE TABLE search_index_temp LIKE search_index');
+        $db->query("ALTER TABLE search_index_temp DISABLE KEYS");
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             $type = explode('_', $indexFile);
             if (!$restriction || stripos(array_pop($type), $restriction) !== false) {
                 $indexClass = basename($indexFile, ".php");
-                $db->query("ALTER TABLE search_index DISABLE KEYS");
                 $indexClass::sqlIndex();
-                $db->query("ALTER TABLE search_index ENABLE KEYS");
-                $db->query("OPTIMIZE TABLE search_index");
             }
         }
+        $db->query("ALTER TABLE search_index_temp ENABLE KEYS");
         $db->query('DROP TABLE search_object');
         $db->query('RENAME TABLE search_object_temp TO search_object');
         $db->query('DROP TABLE search_index');

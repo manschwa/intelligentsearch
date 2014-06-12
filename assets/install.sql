@@ -3,9 +3,9 @@ CREATE TABLE `search_index` (
   `text` text COLLATE latin1_german1_ci NOT NULL,
   `relevance` float NOT NULL,
   KEY `object_id` (`object_id`),
-  KEY `text` (`text`(767)),
-  KEY `relevance` (`relevance`)
-);
+  KEY `relevance` (`relevance`),
+  FULLTEXT KEY `text` (`text`)
+) ENGINE=MyISAM;
 
 CREATE TABLE `search_object` (
   `object_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
