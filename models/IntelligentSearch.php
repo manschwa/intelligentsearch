@@ -44,10 +44,8 @@ class IntelligentSearch extends SearchType {
     }
 
     private function getResultSet($limit = null) {     
-        $search = "$this->query*";
-        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
-                . "SELECT distinct(object_id),text FROM search_index WHERE MATCH (text) AGAINST (?  IN BOOLEAN MODE) ORDER BY relevance DESC"
-                . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
+        $search = '%' . str_replace('%', '|%', $this->query) . '%';
+        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM (SELECT distinct(object_id),text FROM search_index WHERE text LIKE ? escape '|' ORDER BY relevance DESC) as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
         $statement->execute(array($search));
         return $statement;
     }
