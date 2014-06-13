@@ -89,7 +89,10 @@ class IntelligentSearch extends SearchType {
             $object['text'] = substr($object['text'], max(array(0, stripos($object['text'], $query, true) - 100)), 200);
         }
 
-        return preg_replace_callback("/$query/i", function($hit) {
+        // Split words to get them marked individual
+        $words = str_replace(' ', '|', $query);
+
+        return preg_replace_callback("/$words/i", function($hit) {
             return "<span class='result'>$hit[0]</span>";
         }, htmlReady($object['text']));
     }
