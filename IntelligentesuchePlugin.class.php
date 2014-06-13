@@ -66,6 +66,7 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         parent::onDisable($pluginId);
         $task = CronjobTask::findByClass("IntelligentesucheCronjob");
         CronjobScheduler::getInstance()->unregisterTask($task[0]->id);
+        $task->delete();
     }
 
 }
