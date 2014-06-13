@@ -86,7 +86,7 @@ class IntelligentSearch extends SearchType {
     public static function getInfo($object, $query) {
         // Cut down if info is to long
         if (strlen($object['text']) > 200) {
-            $object['text'] = substr($object['text'], max(array(0, stripos($object['text'], $query, true) - 100)), 200);
+            $object['text'] = substr($object['text'], max(array(0, self::findWordPosition($query, $object['text']) - 100)), 200);
         }
 
         // Split words to get them marked individual
@@ -129,6 +129,15 @@ class IntelligentSearch extends SearchType {
 
     public function countResultPages() {
         return ceil(count($this->results) / $this->resultsPerPage);
+    }
+    
+    private static function findWordPosition($words, $text) {
+        foreach (explode(' ', $words) as $word) {
+            $pos = stripos($text, $word);
+            if ($pos) {
+                return $pos;
+            }
+        }
     }
 
 }
