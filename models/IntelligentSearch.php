@@ -44,11 +44,12 @@ class IntelligentSearch extends SearchType {
     }
 
     private function getResultSet($limit = null) {     
-        $search = "$this->query*";
+        $search = str_replace(' ', '* ', $this->query);
         $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
-                . "SELECT distinct(object_id),text FROM search_index WHERE MATCH (text) AGAINST (?  IN BOOLEAN MODE) ORDER BY relevance DESC"
+                . "SELECT distinct(object_id),text FROM search_index WHERE MATCH (text) AGAINST (:query IN BOOLEAN MODE) ORDER BY MATCH (text) AGAINST (:query IN BOOLEAN MODE) * relevance DESC"
                 . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
-        $statement->execute(array($search));
+        $statement->bindParam(':query', $search);
+        $statement->execute();
         return $statement;
     }
 
@@ -86,10 +87,13 @@ class IntelligentSearch extends SearchType {
     public static function getInfo($object, $query) {
         // Cut down if info is to long
         if (strlen($object['text']) > 200) {
-            $object['text'] = substr($object['text'], max(array(0, stripos($object['text'], $query, true) - 100)), 200);
+            $object['text'] = substr($object['text'], max(array(0, self::findWordPosition($query, $object['text']) - 100)), 200);
         }
 
-        return preg_replace_callback("/$query/i", function($hit) {
+        // Split words to get them marked individual
+        $words = str_replace(' ', '|', preg_quote($query));
+
+        return preg_replace_callback("/$words/i", function($hit) {
             return "<span class='result'>$hit[0]</span>";
         }, htmlReady($object['text']));
     }
@@ -126,6 +130,15 @@ class IntelligentSearch extends SearchType {
 
     public function countResultPages() {
         return ceil(count($this->results) / $this->resultsPerPage);
+    }
+    
+    private static function findWordPosition($words, $text) {
+        foreach (explode(' ', $words) as $word) {
+            $pos = stripos($text, $word);
+            if ($pos) {
+                return $pos;
+            }
+        }
     }
 
 }
