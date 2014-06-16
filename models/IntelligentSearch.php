@@ -44,7 +44,7 @@ class IntelligentSearch extends SearchType {
     }
 
     private function getResultSet($limit = null) {     
-        $search = str_replace(' ', '* ', $this->query);
+        $search = str_replace(' ', '* ', $this->query).'*';
         $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
                 . "SELECT object_id,text "
                 . "FROM search_index "
