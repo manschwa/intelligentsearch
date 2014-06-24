@@ -34,7 +34,8 @@ JOIN user_info i ON (u.user_id = i.user_id)");
     }
 
     public static function getAvatar($object) {
-        return CourseAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
+        $avatar = CourseAvatar::getAvatar($object['range_id']);
+        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/seminar.png');
     }
 
 }

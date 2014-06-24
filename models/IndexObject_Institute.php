@@ -18,7 +18,8 @@ class IndexObject_Institute {
     }
 
     public static function getAvatar($object) {
-        return InstituteAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
+        $avatar = InstituteAvatar::getAvatar($object['range_id']);
+        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/institute.png');
     }
 
 }
