@@ -4,6 +4,12 @@
     <? else: ?>
         <h3><?= sprintf(_('Suchergebnisse für %s'), $search->query) ?></h3>
     <? endif; ?>
+<? else: ?>
+    <h3><?= _('Suche') ?></h3>
+    <form class="studip_form">
+        <input type="text" name="search" size="60" placeholder="<?= _('Suchbegriff') ?>">
+        <?= \Studip\Button::create(_('Suchen')) ?>
+    </form>
 <? endif; ?>
 
 
