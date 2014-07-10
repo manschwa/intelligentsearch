@@ -8,7 +8,7 @@ $(document).ready(function() {
         var keycode = (event.keyCode ? event.keyCode : event.which);
         if (keycode == '13') {
             event.preventDefault();
-            window.location = STUDIP.URLHelper.getURL('plugins.php/intelligentesucheplugin/show/index?search='+$('.intelligentsearch').val());
+            window.location = STUDIP.URLHelper.getURL('plugins.php/intelligentesucheplugin/show/index')+'?search='+$('.intelligentsearch').val();
         }
     }).show());
 });
