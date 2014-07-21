@@ -13,10 +13,15 @@ class IndexManager {
         set_time_limit(3600);
         $db = DBManager::get();
         $time = time();
-        $db->query('DROP TABLE IF EXISTS search_object_temp');
-        $db->query('DROP TABLE IF EXISTS search_index_temp');
+        
+        // Purge DB
+        $db->query('DROP TABLE IF EXISTS search_object_temp,search_index_temp,search_object_old,search_index_old');
+        
+        // Create temporary tables
         $db->query('CREATE TABLE search_object_temp LIKE search_object');
         $db->query('CREATE TABLE search_index_temp LIKE search_index');
+        
+        // Make indexing a lot faster
         $db->query("ALTER TABLE search_index_temp DISABLE KEYS");
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             $type = explode('_', $indexFile);
@@ -25,11 +30,21 @@ class IndexManager {
                 $indexClass::sqlIndex();
             }
         }
+        
+        // Create searchindex
         $db->query("ALTER TABLE search_index_temp ENABLE KEYS");
-        $db->query('DROP TABLE search_object');
-        $db->query('RENAME TABLE search_object_temp TO search_object');
-        $db->query('DROP TABLE search_index');
-        $db->query('RENAME TABLE search_index_temp TO search_index');
+        
+        // Swap tables
+        $db->query('RENAME TABLE '
+                . 'search_object TO search_object_old,'
+                . 'search_object_temp TO search_object,'
+                . 'search_index TO search_index_old,'
+                . 'search_index_temp TO search_index');
+        
+        // Drop old index
+        $db->query('DROP TABLE search_object_old,search_index_old');
+        
+        // Return runtime
         return time() - $time;
     }
 
