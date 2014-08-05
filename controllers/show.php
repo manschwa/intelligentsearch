@@ -10,7 +10,9 @@ class ShowController extends StudipController {
     public function before_filter(&$action, &$args) {
 
         $this->set_layout($GLOBALS['template_factory']->open('layouts/base_without_infobox'));
-//      PageLayout::setTitle('');
+
+        // Find query
+        $this->query = Request::get('utf8') ? studip_utf8decode(Request::get('search')) : Request::get('search');
     }
 
     public function index_action() {
@@ -19,7 +21,7 @@ class ShowController extends StudipController {
 
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch();
-            $this->search->query(Request::get('search'), Request::get('filter'));
+            $this->search->query($this->query, Request::get('filter'));
             $this->addSearchSidebar();
         }
     }
@@ -44,7 +46,7 @@ class ShowController extends StudipController {
         $formWidget = new SidebarWidget();
         $formWidget->setTitle(_('Suche'));
         $form = '<form class="studip_form">';
-        $form .= '<input type="text" style="display: inline; width: 230px;" name="search" value="' . Request::get('search') . '" placeholder="' . _('Suchbegriff') . '">';
+        $form .= '<input type="text" style="display: inline; width: 230px;" name="search" value="' . $this->query . '" placeholder="' . _('Suchbegriff') . '">';
         $form .= '</form>';
         $formWidget->addElement(new WidgetElement($form));
         $sidebar->addWidget($formWidget);
