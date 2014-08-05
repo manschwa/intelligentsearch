@@ -44,7 +44,7 @@ class ShowController extends StudipController {
 
     private function createSidebar() {
         $form = '<form class="studip_form">';
-        $form .= '<input type="text" style="display: inline; width: 230px;" name="search" value="' . $this->query . '" placeholder="' . _('Suchbegriff') . '">';
+        $form .= '<input type="text" style="display: inline; width: 204px;" name="search" value="' . $this->query . '" placeholder="' . _('Suchbegriff') . '">';
         $form .= '</form>';
 
         $this->infobox_content[] = array ('kategorie' => _('Suche') . ':',
