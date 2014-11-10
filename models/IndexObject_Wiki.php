@@ -6,7 +6,7 @@ class IndexObject_Wiki {
     const RATING_WIKI_BODY = 0.5;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT range_id, 'wiki', keyword, version, null
+        IndexManager::createObjects("SELECT range_id, 'wiki', keyword, version, null, range_id
 FROM wiki
 INNER JOIN (
 select range_id, keyword,max(version) as version from wiki GROUP BY range_id, keyword) as control

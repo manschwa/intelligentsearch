@@ -178,6 +178,7 @@ class IntelligentSearch extends SearchType {
                 . "ORDER BY SUM(MATCH (text) AGAINST (:query IN BOOLEAN MODE) * relevance) DESC"
                 . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
         $statement->bindParam(':query', $search);
+        $statement->bindParam(':user', $GLOBALS['user']->id);
         $statement->execute();
         return $statement;
     }
@@ -186,17 +187,7 @@ class IntelligentSearch extends SearchType {
         if ($GLOBALS['perm']->have_perm('root')) {
             return "";
         }
-        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
-            $indexClass = basename($indexFile, ".php");
-            $typename = explode('_', $indexClass);
-            $typename = strtolower($typename[1]);
-            if (method_exists($indexClass, 'getCondition')) {
-                $condititions[] = " (search_object.type = '$typename' AND " . $indexClass::getCondition() . ") ";
-            } else {
-                $condititions[] = " (search_object.type = '$typename') ";
-            }
-        }
-        return " WHERE " . join(' OR ', $condititions);
+        return "WHERE visible = 1 OR visible IN (SELECT seminar_id FROM seminar_user WHERE user_id = :user)";
     }
 
     public static function getTypeName($key) {

@@ -84,7 +84,7 @@ class IndexManager {
      * @param SQL SQL for the input
      */
     public static function createObjects($sql) {
-        self::$db->query("INSERT INTO search_object_temp (range_id, type, title, range2, range3) ($sql)");
+        self::$db->query("INSERT INTO search_object_temp (range_id, type, title, range2, range3, visible) ($sql)");
     }
 
     public static function createIndex($sql) {
