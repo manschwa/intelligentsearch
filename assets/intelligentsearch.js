@@ -4,10 +4,10 @@ $(document).ready(function() {
 
     if (quicksearch.length) {
         // Remove old quicksearch
-        $('#quicksearch').children().remove();
+        quicksearch.children().remove();
 
         // Add new quicksearch
-        $('#quicksearch').prepend($('.intelligentsearch').keypress(function(event) {
+        quicksearch.prepend($('.intelligentsearch').keypress(function(event) {
             var keycode = (event.keyCode ? event.keyCode : event.which);
             if (keycode == '13') {
                 event.preventDefault();
