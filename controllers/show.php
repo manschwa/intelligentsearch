@@ -50,7 +50,7 @@ class ShowController extends StudipController {
         $form .= '</form>';
         $formWidget->addElement(new WidgetElement($form));
         $sidebar->addWidget($formWidget);
-
+        
 
         // Root may update index
         if ($GLOBALS['perm']->have_perm('root')) {
@@ -69,6 +69,14 @@ class ShowController extends StudipController {
             $widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
         }
         $sidebar->addWidget($widget);
+        
+        // On develop display runtime
+        if (Studip\ENV == 'development') {
+            $info = new SidebarWidget();
+            $info->setTitle(_('Laufzeit'));
+            $info->addElement(new InfoboxElement($this->search->time));
+            $sidebar->addWidget($info);
+        }
     }
 
     // customized #url_for for plugins
