@@ -169,14 +169,13 @@ class IntelligentSearch extends SearchType {
         
         // Stick em together
         $search = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-        
-        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
-                . "SELECT object_id,text "
+        $statement = DBManager::get()->prepare("SELECT distinct(object_id),search_object.*,text, MATCH (text) AGAINST (:query) * chdate * boost as score "
                 . "FROM search_index "
+                . "JOIN search_object USING (object_id) "
                 . "WHERE MATCH (text) AGAINST (:query IN BOOLEAN MODE) "
-                . "GROUP BY object_id "
-                . "ORDER BY SUM(MATCH (text) AGAINST (:query IN BOOLEAN MODE) * relevance) DESC"
-                . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
+                . self::buildWhere() 
+                . "ORDER BY score DESC "
+                . ($limit ? " LIMIT $limit" : ""));
         $statement->bindParam(':query', $search);
         $statement->execute();
         return $statement;
@@ -186,17 +185,13 @@ class IntelligentSearch extends SearchType {
         if ($GLOBALS['perm']->have_perm('root')) {
             return "";
         }
-        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
-            $indexClass = basename($indexFile, ".php");
-            $typename = explode('_', $indexClass);
-            $typename = strtolower($typename[1]);
-            if (method_exists($indexClass, 'getCondition')) {
-                $condititions[] = " (search_object.type = '$typename' AND " . $indexClass::getCondition() . ") ";
-            } else {
-                $condititions[] = " (search_object.type = '$typename') ";
-            }
+        $uservisible = DBManager::get()->prepare('SELECT Seminar_id FROM seminar_user WHERE user_id = ?');
+        $uservisible->execute(array($GLOBALS['user']->id));
+        $cond = " AND search_object.visible IN ('1'";
+        while ($sem = $uservisible->fetch(PDO::FETCH_COLUMN, 0)) {
+            $cond .= ",'$sem'";
         }
-        return " WHERE " . join(' OR ', $condititions);
+        return $cond.") ";
     }
 
     public static function getTypeName($key) {

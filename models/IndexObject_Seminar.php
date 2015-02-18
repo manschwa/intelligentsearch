@@ -8,17 +8,17 @@ class IndexObject_Seminar {
     const RATING_SEMINAR_OTHER = 0.6;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT seminar_id, 'seminar', CONCAT_WS(' ', sd.name, s.Veranstaltungsnummer, s.name), null,null FROM seminare s JOIN semester_data sd ON s.start_time BETWEEN sd.beginn AND sd.ende");
+        IndexManager::createObjects("SELECT seminar_id, 'seminar', CONCAT_WS(' ', sd.name, s.Veranstaltungsnummer, s.name), null,null, s.chdate, IF (visible=1, 1,s.seminar_id) FROM seminare s JOIN semester_data sd ON s.start_time BETWEEN sd.beginn AND sd.ende");
         IndexManager::log("Seminar objects created");
-        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Veranstaltungsnummer, Name), " . IndexManager::relevance(self::RATING_SEMINAR, 'start_time') . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id)");
+        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Veranstaltungsnummer, Name), " . self::RATING_SEMINAR . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id)");
         IndexManager::log("Indexed name");
-        IndexManager::createIndex("SELECT object_id, Untertitel, " . IndexManager::relevance(self::RATING_SEMINAR_SUBTITLE, 'start_time') . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Untertitel != ''");
+        IndexManager::createIndex("SELECT object_id, Untertitel, " . self::RATING_SEMINAR_SUBTITLE . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Untertitel != ''");
         IndexManager::log("Indexed subtitle");
-        IndexManager::createIndex("SELECT object_id, Beschreibung, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Beschreibung != ''");
+        IndexManager::createIndex("SELECT object_id, Beschreibung, " . self::RATING_SEMINAR_OTHER . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Beschreibung != ''");
         IndexManager::log("Indexed description");
-        IndexManager::createIndex("SELECT object_id, Sonstiges, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Sonstiges != ''");
+        IndexManager::createIndex("SELECT object_id, Sonstiges, " . self::RATING_SEMINAR_OTHER . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Sonstiges != ''");
         IndexManager::log("Indexed other");
-        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ',i.title_front, a.Vorname, a.Nachname), " . IndexManager::relevance(self::RATING_SEMINAR_DOZENT, 'start_time') . "
+        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ',i.title_front, a.Vorname, a.Nachname), " . self::RATING_SEMINAR_DOZENT . "
 FROM seminare s 
 JOIN search_object_temp ON (s.seminar_id = range_id) 
 JOIN seminar_user u ON (s.seminar_id = u.seminar_id AND u.status = 'dozent')

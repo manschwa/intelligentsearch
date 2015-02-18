@@ -6,14 +6,14 @@ class IndexObject_Wiki {
     const RATING_WIKI_BODY = 0.5;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT range_id, 'wiki', keyword, version, null
+        IndexManager::createObjects("SELECT range_id, 'wiki', keyword, version, null, wiki.chdate, wiki.range_id
 FROM wiki
 INNER JOIN (
 select range_id, keyword,max(version) as version from wiki GROUP BY range_id, keyword) as control
 USING (range_id, keyword,version)");
-        IndexManager::createIndex("SELECT object_id, keyword, " . IndexManager::relevance(self::RATING_WIKI_KEYWORD, 'wiki.chdate') . "
+        IndexManager::createIndex("SELECT object_id, keyword, " . self::RATING_WIKI_KEYWORD . "
 FROM wiki JOIN search_object_temp ON (search_object_temp.range_id = wiki.range_id AND keyword = search_object_temp.title AND version = search_object_temp.range2)");
-        IndexManager::createIndex("SELECT object_id, body, " . IndexManager::relevance(self::RATING_WIKI_BODY, 'wiki.chdate') . "
+        IndexManager::createIndex("SELECT object_id, body, " . self::RATING_WIKI_BODY. "
 FROM wiki JOIN search_object_temp ON (search_object_temp.range_id = wiki.range_id AND keyword = search_object_temp.title AND version = search_object_temp.range2)");
     }
 

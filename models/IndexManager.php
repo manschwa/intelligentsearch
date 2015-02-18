@@ -84,15 +84,11 @@ class IndexManager {
      * @param SQL SQL for the input
      */
     public static function createObjects($sql) {
-        self::$db->query("INSERT INTO search_object_temp (range_id, type, title, range2, range3) ($sql)");
+        self::$db->query("INSERT INTO search_object_temp (range_id, type, title, range2, range3, chdate, visible) ($sql)");
     }
 
     public static function createIndex($sql) {
-        self::$db->query("INSERT INTO search_index_temp (object_id, text, relevance) ($sql)");
-    }
-
-    public static function relevance($base, $modifier) {
-        return "pow( $base , ((UNIX_TIMESTAMP() - $modifier ) / 31556926)) as relevance";
+        self::$db->query("INSERT INTO search_index_temp (object_id, text, boost) ($sql)");
     }
 
     public static function createJoin($on) {
