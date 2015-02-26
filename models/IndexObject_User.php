@@ -1,19 +1,24 @@
 <?php
 
-class IndexObject_User {
+class IndexObject_User extends AbstractIndexObject {
 
     const RATING_USER = 0.9;
 
-    public static function sqlIndex() {
-        IndexManager::createObjects("SELECT user_id, 'user', CONCAT_WS(' ', title_front, Vorname, Nachname, title_rear), username, null, user_info.chdate, 
-IF (search = 1 AND visible IN ('global', 'always', 'yes'), 1, 0) 
-FROM auth_user_md5 
+    static $range_id = "auth_user_md5.user_id";
+    static $chdate = "user_info.chdate";
+    static $range2 = "username";
+    static $name = "CONCAT_WS(' ', title_front, Vorname, Nachname, title_rear)";
+    static $idTable = "auth_user_md5";
+    static $visible = "IF (search = 1 AND auth_user_md5.visible IN ('global', 'always', 'yes'), 1, 0)";
+    static $from = "auth_user_md5 
 JOIN user_info USING (user_id)
-JOIN user_visibility USING (user_id)");
+JOIN user_visibility USING (user_id)";
+
+    public static function sqlIndex() {
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname, "
                 . "CONCAT('(', username, ')')), "
                 . self::RATING_USER
-                . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN user_info USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
+                . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN user_info USING (user_id) JOIN search_object_temp ON (user_id = object_id)");
     }
 
     public static function getName() {

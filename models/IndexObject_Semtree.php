@@ -1,11 +1,14 @@
 <?php
 
-class IndexObject_Semtree {
+class IndexObject_Semtree extends AbstractIndexObject {
 
     const RATING_SEMTREE = 0.7;
 
+    static $range_id = "sem_tree.sem_tree_id";
+    static $chdate = "unix_timestamp()";
+    static $idTable = "sem_tree";
+
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, null,null, unix_timestamp(), 1 FROM sem_tree");
         IndexManager::createIndex("SELECT object_id, name, " . self::RATING_SEMTREE . " FROM sem_tree " . IndexManager::createJoin('sem_tree_id'));
     }
 

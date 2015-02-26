@@ -1,13 +1,25 @@
 <?php
 
-class IndexObject_Forumentry {
+class IndexObject_Forumentry Extends AbstractIndexObject {
 
     const RATING_FORUMENTRY = 0.6;
     const RATING_FORUMAUTHOR = 0.5;
 
+    static $range_id = "forum_entries.topic_id";
+    static $chdate = "forum_entries.chdate";
+    static $range2 = "seminar_id";
+    static $range3 = "null";
+    static $visible = "seminar_id";
+    static $from = "forum_entries JOIN seminare USING (seminar_id) ";
+    static $condition = "seminar_id != topic_id";
+    static $idTable = "forum_entries";
+
+    static function name() {
+        return "CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(forum_entries.name), ''), '" . _('Forumeintrag') . "'))";
+    }
+
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT topic_id, 'forumentry', CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(forum_entries.name), ''), '" . _('Forumeintrag') . "')), seminar_id, null, forum_entries.chdate, seminar_id FROM forum_entries JOIN seminare USING (seminar_id) WHERE seminar_id != topic_id");
-        IndexManager::createIndex("SELECT object_id, content, " . self::RATING_FORUMENTRY . " FROM forum_entries" . IndexManager::createJoin('topic_id'));
+        IndexManager::createIndex("SELECT object_id, content, " . self::RATING_FORUMENTRY . " FROM forum_entries " . IndexManager::createJoin('topic_id'));
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', '" . _('Autor') . ":', vorname, nachname, username), " . self::RATING_FORUMAUTHOR . " FROM forum_entries JOIN auth_user_md5 USING (user_id) " . IndexManager::createJoin('topic_id'));
     }
 

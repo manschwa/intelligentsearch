@@ -13,6 +13,11 @@ class IndexManager {
     public static $current_file;
     public static $db;
 
+    const OBJECT_TABLE = "search_object";
+    const TEMP_OJECT_TABLE = "search_object_temp";
+    const INDEX_TABLE = "search_index";
+    const TEMP_INDEX_TABLE = "search_index_temp";
+
     public static function sqlIndex($restriction = null) {
         set_time_limit(3600);
         self::$db = DBManager::get();
@@ -40,6 +45,14 @@ class IndexManager {
                     $indexClass = basename($indexFile, ".php");
                     self::log("Indexing $indexClass");
                     self::$current_file = $indexClass;
+
+                    // Purge old objects
+                    $indexClass::deleteObjects();
+
+                    // Update objects
+                    $indexClass::updateObjects();
+
+                    // Index files
                     $indexClass::sqlIndex();
                     self::$current_file = "";
                     self::log("Finished $indexClass");
@@ -47,29 +60,47 @@ class IndexManager {
             }
             self::log("Finished indexing");
 
-            // Create searchindex
-            self::$db->query("ALTER TABLE search_index_temp ENABLE KEYS");
-            self::log("Keys enabled");
+            /*
+             * OLD SWAP CODE! UNWANTED FOR INCREMENTIAL
+             * 
 
-            // Swap tables
-            self::$db->query('RENAME TABLE '
-                    . 'search_object TO search_object_old,'
-                    . 'search_object_temp TO search_object,'
-                    . 'search_index TO search_index_old,'
-                    . 'search_index_temp TO search_index');
-            self::log("Tables swapped");
+              // Create searchindex
+              self::$db->query("ALTER TABLE search_index_temp ENABLE KEYS");
+              self::log("Keys enabled");
+
+              // Swap tables
+              self::$db->query('RENAME TABLE '
+              . 'search_object TO search_object_old,'
+              . 'search_object_temp TO search_object,'
+              . 'search_index TO search_index_old,'
+              . 'search_index_temp TO search_index');
+              self::log("Tables swapped");
+             *
+             */
+
+            // Delete index entries with updated entries
+            self::$db->query('DELETE ' . self::INDEX_TABLE . '.* FROM ' . self::INDEX_TABLE . ' JOIN ' . self::TEMP_INDEX_TABLE . ' USING (object_id)');
+            self::log("Index purged");
+
+            // Move new index entries
+            self::$db->query('INSERT INTO ' . self::INDEX_TABLE . ' SELECT * FROM ' . self::TEMP_INDEX_TABLE);
+            self::log("Index updated");
+
+            // Move new object entries
+            self::$db->query('REPLACE INTO ' . self::OBJECT_TABLE . ' SELECT * FROM ' . self::TEMP_OJECT_TABLE);
+            self::log("Objects updated");
 
             // Drop old index
-            self::$db->query('DROP TABLE search_object_old,search_index_old');
-            self::log("Old tables dropped");
+            self::$db->query('DROP TABLE ' . self::TEMP_INDEX_TABLE . ', ' . self::TEMP_OJECT_TABLE);
+            self::log("Temp tables dropped");
 
             $runtime = time() - $time;
             self::log("FINISHED! Runtime: " . floor($runtime / 60) . ":" . ($runtime % 60));
 
             // Return runtime
             return $runtime;
-            
-        // In case of mysql error imediately abort
+
+            // In case of mysql error imediately abort
         } catch (PDOException $e) {
             self::log("MySQL Error occured!");
             self::log($e->getMessage());
@@ -84,15 +115,22 @@ class IndexManager {
      * @param SQL SQL for the input
      */
     public static function createObjects($sql) {
-        self::$db->query("INSERT INTO search_object_temp (range_id, type, title, range2, range3, chdate, visible) ($sql)");
+        $count = self::$db->exec("INSERT IGNORE INTO " . self::TEMP_OJECT_TABLE . " (object_id, type, title, range2, range3, chdate, visible) ($sql)");
+        self::log("Created $count new objects");
     }
 
     public static function createIndex($sql) {
-        self::$db->query("INSERT INTO search_index_temp (object_id, text, boost) ($sql)");
+        $count = self::$db->exec("INSERT INTO search_index_temp (object_id, text, boost) ($sql)");
+        self::log("Created $count new indices");
+    }
+
+    public static function deleteObjects($type, $sql) {
+        $count = self::$db->exec("DELETE " . self::OBJECT_TABLE . ".*, " . self::INDEX_TABLE . ".* FROM " . self::OBJECT_TABLE . " JOIN " . self::INDEX_TABLE . " USING (object_id) WHERE type = '" . $type . "' AND $sql");
+        self::log("Removed $count deleted objects");
     }
 
     public static function createJoin($on) {
-        return " JOIN search_object_temp ON (search_object_temp.range_id = $on) ";
+        return " JOIN " . self::TEMP_OJECT_TABLE . " ON (" . self::TEMP_OJECT_TABLE . ".object_id = $on) ";
     }
 
     /**
