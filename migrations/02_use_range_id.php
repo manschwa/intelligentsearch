@@ -21,7 +21,7 @@ class UseRangeId extends DBMigration {
   `range3` varchar(32) DEFAULT NULL,
   `visible` varchar(32) DEFAULT NULL,
   `chdate` int(11) DEFAULT NULL,
-  PRIMARY KEY (`range_id`),
+  PRIMARY KEY (`object_id`),
   KEY `type` (`type`),
   KEY `chdate` (`chdate`)
 );");

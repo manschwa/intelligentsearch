@@ -24,17 +24,25 @@ class AbstractIndexObject {
     }
     
     public static function deleteObjects() {
-        IndexManager::deleteObjects(static::getTypename(), " NOT EXISTS (SELECT 1 FROM ".static::idTable()." WHERE ".static::range_id()." = object_id LIMIT 1)");
+        IndexManager::deleteObjects(
+                static::getTypename(),
+                " NOT EXISTS (SELECT 1 FROM "
+                .static::idTable()
+                ." WHERE "
+                .static::range_id()
+                ." = object_id LIMIT 1)");
     }
 
     public static function updateObjects($limit = 5000) {
         IndexManager::createObjects(static::getSelect()
                 ." FROM " . static::from() 
-                ." LEFT JOIN ".IndexManager::OBJECT_TABLE." ON (object_id = ".static::range_id().") "
+                ." LEFT JOIN ".IndexManager::OBJECT_TABLE
+                ." ON (object_id = ".static::range_id().") "
                 ." WHERE object_id IS NULL "
                 ." OR ".static::chdate()." > " . IndexManager::OBJECT_TABLE . ".chdate "
                 . (self::condition() ? " AND ".self::condition() : '')
-                ." ORDER BY ".static::chdate()." - " . IndexManager::OBJECT_TABLE . ".chdate LIMIT $limit");
+                ." ORDER BY ".static::chdate()." - " 
+                . IndexManager::OBJECT_TABLE . ".chdate LIMIT $limit");
     }
     
     protected static function getSelect() {

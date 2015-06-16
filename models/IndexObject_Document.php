@@ -2,8 +2,6 @@
 
 class IndexObject_Document Extends AbstractIndexObject {
 
-    const RATING_DOCUMENT_TITLE = 0.9;
-    const RATING_DOCUMENT_DESCRIPTION = 0.8;
 
     static $range_id = "dokument_id";
     static $chdate = "dokumente.chdate";
@@ -17,9 +15,17 @@ class IndexObject_Document Extends AbstractIndexObject {
         return "CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(dokumente.name), ''), '" . _('Datei') . "'))";
 }
 
+
+    const RATING_DOCUMENT_TITLE = 0.9;
+    const RATING_DOCUMENT_DESCRIPTION = 0.8;
+
     public static function sqlIndex() {
-        IndexManager::createIndex("SELECT object_id, name, " . self::RATING_DOCUMENT_TITLE . " FROM dokumente" . IndexManager::createJoin('dokument_id'));
-        IndexManager::createIndex("SELECT object_id, description, " . self::RATING_DOCUMENT_DESCRIPTION . " FROM dokumente" . IndexManager::createJoin('dokument_id'));
+        IndexManager::createIndex("SELECT object_id, name, " 
+                . self::RATING_DOCUMENT_TITLE . " FROM dokumente" 
+                . IndexManager::createJoin('dokument_id'));
+        IndexManager::createIndex("SELECT object_id, description, " 
+                . self::RATING_DOCUMENT_DESCRIPTION . " FROM dokumente" 
+                . IndexManager::createJoin('dokument_id'));
     }
 
     public static function getName() {
