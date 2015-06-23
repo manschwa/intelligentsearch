@@ -84,7 +84,7 @@ class IndexManager {
      * @param SQL SQL for the input
      */
     public static function createObjects($sql) {
-        self::$db->query("INSERT INTO search_object_temp (range_id, type, title, range2, range3, visible) ($sql)");
+        self::$db->query("INSERT INTO search_object_temp (object_id, type, title, range2, range3, visible) ($sql)");
     }
 
     public static function createIndex($sql) {
@@ -96,7 +96,7 @@ class IndexManager {
     }
 
     public static function createJoin($on) {
-        return " JOIN search_object_temp ON (search_object_temp.range_id = $on) ";
+        return " JOIN search_object_temp ON (search_object_temp.object_id = $on) ";
     }
 
     /**

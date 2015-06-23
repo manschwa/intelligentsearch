@@ -1,4 +1,4 @@
-CREATE TABLE `search_index` (
+CREATE TABLE IF NOT EXISTS `search_index` (
   `object_id` int(11) NOT NULL,
   `text` text NOT NULL,
   `relevance` float NOT NULL,
@@ -7,7 +7,7 @@ CREATE TABLE `search_index` (
   FULLTEXT KEY `text` (`text`)
 ) ENGINE=MyISAM;
 
-CREATE TABLE `search_object` (
+CREATE TABLE IF NOT EXISTS`search_object` (
   `object_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `range_id` varchar(32) NOT NULL DEFAULT '',
   `type` varchar(255) NOT NULL DEFAULT '',

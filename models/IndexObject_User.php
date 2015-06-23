@@ -9,10 +9,10 @@ class IndexObject_User {
                 . "FROM auth_user_md5 "
                 . "JOIN user_info USING (user_id) "
                 . "JOIN user_visibility USING (user_id)");
-        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname, "
+        IndexManager::createIndex("SELECT user_id, CONCAT_WS(' ', Vorname, Nachname, "
                 . "CONCAT('(', username, ')')), "
                 . self::RATING_USER." + LOG((SELECT avg(score) FROM user_info WHERE score != 0), score + 3) "
-                . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN user_info USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
+                . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN user_info USING (user_id)");
     }
 
     public static function getName() {
