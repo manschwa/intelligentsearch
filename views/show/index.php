@@ -2,7 +2,7 @@
     <? if ($search->error): ?>
         <p><?= htmlReady($search->error) ?></p>
     <? else: ?>
-        <h3><?= sprintf(_('Suchergebnisse für %s'), $search->query) ?></h3>
+        <h3><?= sprintf(_('Suchergebnisse für %s'), htmlReady($search->query)) ?></h3>
     <? endif; ?>
 <? endif; ?>
 
