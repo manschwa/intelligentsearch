@@ -2,7 +2,7 @@
 
 class IndexObject_Semtree {
 
-    const RATING_SEMTREE = 0.7;
+    const RATING_SEMTREE = 0.1;
 
     public static function sqlIndex() {
         IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, null,null FROM sem_tree");
@@ -14,7 +14,7 @@ class IndexObject_Semtree {
     }
 
     public static function link($object) {
-        return "sem_portal.php?start_item_id={$object['range_id']}";
+        return "dispatch.php/search/courses?start_item_id={$object['range_id']}";
     }
 
     public static function getAvatar() {
