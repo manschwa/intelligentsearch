@@ -5,7 +5,7 @@ CREATE TABLE `search_index` (
   KEY `object_id` (`object_id`),
   KEY `relevance` (`relevance`),
   FULLTEXT KEY `text` (`text`)
-) ENGINE=MyISAM;
+) ENGINE=InnoDB;
 
 CREATE TABLE `search_object` (
   `object_id` int(11) unsigned NOT NULL AUTO_INCREMENT,

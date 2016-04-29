@@ -32,8 +32,8 @@ class IndexManager {
             self::log("Temporary tables created");
 
             // Make indexing a lot faster
-            self::$db->query("ALTER TABLE search_index_temp DISABLE KEYS");
-            self::log("Keys disabled");
+//            self::$db->query("ALTER TABLE search_index_temp DISABLE KEYS");
+//            self::log("Keys disabled");
             foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
                 $type = explode('_', $indexFile);
                 if (!$restriction || stripos(array_pop($type), $restriction) !== false) {
@@ -48,8 +48,8 @@ class IndexManager {
             self::log("Finished indexing");
 
             // Create searchindex
-            self::$db->query("ALTER TABLE search_index_temp ENABLE KEYS");
-            self::log("Keys enabled");
+//            self::$db->query("ALTER TABLE search_index_temp ENABLE KEYS");
+//            self::log("Keys enabled");
 
             // Swap tables
             self::$db->query('RENAME TABLE '
