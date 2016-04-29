@@ -1,3 +1,4 @@
+<!-- Searchbar -->
 <form class="studip_form">
     <input type="text" style="width: 35%;" name="search" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
 </form>
@@ -6,10 +7,9 @@
     <? if ($search->error): ?>
         <p><?= htmlReady($search->error) ?></p>
     <? else: ?>
-        <h3><?= sprintf(_('Suchergebnisse für %s'), htmlReady($search->query)) ?></h3>
+        <h3><?= sprintf(_('Suchergebnisse für "%s"'), htmlReady($search->query)) ?></h3>
     <? endif; ?>
 <? endif; ?>
-
 
 <? if ($search->results): ?>
     <section class="search_results">
@@ -23,5 +23,7 @@
             </article>
         <? endforeach; ?>
     </section>
+<? elseif ($search->query && !$search->error): ?>
+    <?= _('Leider keine Treffer.') ?>
 <? endif; ?>
 <?= $this->render_partial('show/_pagination.php', array('search' => $search)) ?>

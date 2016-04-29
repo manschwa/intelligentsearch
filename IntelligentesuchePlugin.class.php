@@ -10,7 +10,7 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
     public function __construct() {
         parent::__construct();
         $this->setupAutoload();
-        $navigation = new AutoNavigation(_('Suche'));
+        $navigation = new AutoNavigation(_('Globale Suche'));
         $navigation->setURL(PluginEngine::GetURL($this, array(), 'show/index'));
         
         //Insert even before courses search

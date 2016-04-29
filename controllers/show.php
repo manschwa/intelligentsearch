@@ -22,8 +22,8 @@ class ShowController extends StudipController {
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch();
             $this->search->query($this->query, Request::get('filter'));
-            $this->addSearchSidebar();
         }
+        $this->addSearchSidebar();
     }
 
     public function open_action($id) {
@@ -43,15 +43,6 @@ class ShowController extends StudipController {
         $sidebar = Sidebar::get();
         $sidebar->setImage('sidebar/search-sidebar.png');
 
-        $formWidget = new SidebarWidget();
-        $formWidget->setTitle(_('Suche'));
-        $form = '<form class="studip_form">';
-        $form .= '<input type="text" style="display: inline; width: 230px;" name="search" value="' . $this->query . '" placeholder="' . _('Suchbegriff') . '">';
-        $form .= '</form>';
-        $formWidget->addElement(new WidgetElement($form));
-        $sidebar->addWidget($formWidget);
-        
-
         // Root may update index
         if ($GLOBALS['perm']->have_perm('root')) {
             $actions = new ActionsWidget();
@@ -64,14 +55,17 @@ class ShowController extends StudipController {
         $sidebar = Sidebar::get();
         $widget = new LinksWidget;
         $widget->setTitle(_('Ergebnisse'));
-        $widget->addLink(_('Alle') . " ({$this->search->count})", URLHelper::getURL('', array("search" => $this->search->query)), !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+        if ($this->search->count) {
+            $widget->addLink(_('Alle') . " ({$this->search->count})", URLHelper::getURL('', array("search" => $this->search->query)), !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+        }
         foreach ($this->search->resultTypes as $type => $results) {
             $widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
         }
+
         $sidebar->addWidget($widget);
-        
+
         // On develop display runtime
-        if (Studip\ENV == 'development') {
+        if (Studip\ENV == 'development' && $GLOBALS['perm']->have_perm('admin')) {
             $info = new SidebarWidget();
             $info->setTitle(_('Laufzeit'));
             $info->addElement(new InfoboxElement($this->search->time));
