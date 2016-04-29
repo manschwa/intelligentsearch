@@ -1,3 +1,7 @@
+<form class="studip_form">
+    <input type="text" style="width: 35%;" name="search" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
+</form>
+
 <? if ($search->query): ?>
     <? if ($search->error): ?>
         <p><?= htmlReady($search->error) ?></p>
