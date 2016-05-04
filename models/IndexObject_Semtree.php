@@ -5,8 +5,8 @@ class IndexObject_Semtree {
     const RATING_SEMTREE = 0.1;
 
     public static function sqlIndex() {
-        IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, null,null FROM sem_tree");
-        IndexManager::createIndex("SELECT object_id, name, " . self::RATING_SEMTREE . " FROM sem_tree " . IndexManager::createJoin('sem_tree_id'));
+        IndexManager::createObjects("SELECT sem_tree_id, 'semtree', name, null,null FROM sem_tree WHERE name != ''");
+        IndexManager::createIndex("SELECT object_id, name, " . self::RATING_SEMTREE . " FROM sem_tree " . IndexManager::createJoin('sem_tree_id') . " WHERE name != ''");
     }
 
     public static function getName() {

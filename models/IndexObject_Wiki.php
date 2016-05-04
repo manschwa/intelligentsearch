@@ -12,9 +12,9 @@ INNER JOIN (
 select range_id, keyword,max(version) as version from wiki GROUP BY range_id, keyword) as control
 USING (range_id, keyword,version)");
         IndexManager::createIndex("SELECT object_id, keyword, " . IndexManager::relevance(self::RATING_WIKI_KEYWORD, 'wiki.chdate') . "
-FROM wiki JOIN search_object_temp ON (search_object_temp.range_id = wiki.range_id AND keyword = search_object_temp.title AND version = search_object_temp.range2)");
+FROM wiki JOIN search_object_temp ON (search_object_temp.range_id = wiki.range_id AND keyword = search_object_temp.title AND version = search_object_temp.range2) WHERE keyword != ''");
         IndexManager::createIndex("SELECT object_id, body, " . IndexManager::relevance(self::RATING_WIKI_BODY, 'wiki.chdate') . "
-FROM wiki JOIN search_object_temp ON (search_object_temp.range_id = wiki.range_id AND keyword = search_object_temp.title AND version = search_object_temp.range2)");
+FROM wiki JOIN search_object_temp ON (search_object_temp.range_id = wiki.range_id AND keyword = search_object_temp.title AND version = search_object_temp.range2) WHERE body != ''");
     }
 
     public static function getName() {

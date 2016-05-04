@@ -7,8 +7,8 @@ class IndexObject_Resource {
 
     public static function sqlIndex() {
         IndexManager::createObjects("SELECT resource_id, 'resource', name, null,null FROM resources_objects");
-        IndexManager::createIndex("SELECT object_id, name, " . self::RATING_RESOURCE_NAME . " FROM resources_objects" . IndexManager::createJoin('resource_id'));
-        IndexManager::createIndex("SELECT object_id, description, " . self::RATING_RESOURCE_DESCRIPTION . " FROM resources_objects" . IndexManager::createJoin('resource_id'));
+        IndexManager::createIndex("SELECT object_id, name, " . self::RATING_RESOURCE_NAME . " FROM resources_objects" . IndexManager::createJoin('resource_id') . " WHERE name != ''");
+        IndexManager::createIndex("SELECT object_id, description, " . self::RATING_RESOURCE_DESCRIPTION . " FROM resources_objects" . IndexManager::createJoin('resource_id') . " WHERE description != ''");
     }
 
     public static function getName() {
