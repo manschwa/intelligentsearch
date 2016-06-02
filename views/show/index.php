@@ -1,6 +1,6 @@
 <!-- Searchbar -->
-<form class="studip_form">
-    <input type="text" style="width: 35%;" name="search" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
+<form novalidate="novalidate" style="text-align: center">
+    <input type="text" style="width: 45%" name="search" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
 </form>
 
 <? if ($search->query): ?>

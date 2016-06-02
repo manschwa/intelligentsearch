@@ -53,6 +53,14 @@ class ShowController extends StudipController {
 
     private function addSearchSidebar() {
         $sidebar = Sidebar::get();
+
+        // add some text
+        $info_widget = new InfoboxWidget();
+        $info_widget->setTitle(_('Information'));
+        $info_widget->addElement(new InfoboxElement(_('Suchen Sie nach Veranstaltungen, Personen, Räumen, Dateien, Forenpostings.'), Icon::create('info')));
+        $sidebar->addWidget($info_widget);
+
+        // add the results
         $widget = new LinksWidget;
         $widget->setTitle(_('Ergebnisse'));
         if ($this->search->count) {
@@ -65,7 +73,7 @@ class ShowController extends StudipController {
         $sidebar->addWidget($widget);
 
         // On develop display runtime
-        if (Studip\ENV == 'development' && $GLOBALS['perm']->have_perm('admin')) {
+        if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
             $info = new SidebarWidget();
             $info->setTitle(_('Laufzeit'));
             $info->addElement(new InfoboxElement($this->search->time));
