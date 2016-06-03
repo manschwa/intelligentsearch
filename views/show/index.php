@@ -1,6 +1,6 @@
 <!-- Searchbar -->
 <form novalidate="novalidate" style="text-align: center">
-    <input type="text" style="width: 45%" name="search" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
+    <input type="text" style="width: 45%" name="search" tabindex="1" value="<?= $search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
 </form>
 
 <? if ($search->query): ?>
@@ -11,7 +11,7 @@
     <? endif; ?>
 <? endif; ?>
 
-<? if ($search->results): ?>
+<? if ($search->results && ($_SESSION['global_search']['show']['all']) || $_SESSION['global_search']['show']['some']): ?>
     <section class="search_results">
         <? foreach ($search->resultPage(Request::get('page')) as $result): ?>
             <article>
@@ -23,7 +23,7 @@
             </article>
         <? endforeach; ?>
     </section>
-<? elseif ($search->query && !$search->error): ?>
+<? elseif ($search->query && !$search->error && $_SESSION['global_search']['show']['all']): ?>
     <?= _('Leider keine Treffer.') ?>
 <? endif; ?>
 <?= $this->render_partial('show/_pagination.php', array('search' => $search)) ?>

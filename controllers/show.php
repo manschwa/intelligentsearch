@@ -57,20 +57,32 @@ class ShowController extends StudipController {
         // add some text
         $info_widget = new InfoboxWidget();
         $info_widget->setTitle(_('Information'));
-        $info_widget->addElement(new InfoboxElement(_('Suchen Sie nach Veranstaltungen, Personen, Räumen, Dateien, Forenpostings.'), Icon::create('info')));
+        $info_widget->addElement(new InfoboxElement(_('Suchen Sie nach Veranstaltungen, Personen, Dateien, Einrichtungen, Räumen, Forenpostings und Wiki-Einträgen.'), Icon::create('info')));
         $sidebar->addWidget($info_widget);
 
         // add the results
-        $widget = new LinksWidget;
-        $widget->setTitle(_('Ergebnisse'));
+        $options_widget = new OptionsWidget;
+        $options_widget->setTitle(_('Ergebnisse'));
         if ($this->search->count) {
-            $widget->addLink(_('Alle') . " ({$this->search->count})", URLHelper::getURL('', array("search" => $this->search->query)), !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+            $_SESSION['global_search']['show']['all']  = Request::option('show') === 'all' ? true : false;
+            $_SESSION['global_search']['show']['some'] = false;
+            $options_widget->addCheckbox(_('Alle') . " ({$this->search->count})",
+                                        $_SESSION['global_search']['show']['all'],
+                                        URLHelper::getURL('', array("search" => $this->search->query, "show" => "all")),
+                                        URLHelper::getURL('', array("search" => $this->search->query, "show" => "none")));//, !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
         }
         foreach ($this->search->resultTypes as $type => $results) {
-            $widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)", URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type)), $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
+            $_SESSION['global_search']['show'][$type] = Request::option('show') === $type ? true : false;
+            if ($_SESSION['global_search']['show'][$type] === true && $_SESSION['global_search']['show']['all'] === false) {
+                $_SESSION['global_search']['show']['some'] = true;
+            }
+            $options_widget->addCheckbox(IntelligentSearch::getTypeName($type) . " ($results)",
+                                        $_SESSION['global_search']['show'][$type],
+                                        URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type, "show" => $type)),
+                                        URLHelper::getURL('', array("search" => $this->search->query, "show" => $type."_off")));//, $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
         }
-
-        $sidebar->addWidget($widget);
+        var_dump($_SESSION['global_search']);
+        $sidebar->addWidget($options_widget);
 
         // On develop display runtime
         if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
