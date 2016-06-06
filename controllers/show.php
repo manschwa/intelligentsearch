@@ -21,7 +21,7 @@ class ShowController extends StudipController {
 
         if (Request::submitted('search')) {
             $this->search = new IntelligentSearch();
-            $this->search->query($this->query, Request::get('filter'));
+            $this->search->query($this->query, $this->getFilterArray());
         }
         $this->addSearchSidebar();
     }
@@ -51,45 +51,20 @@ class ShowController extends StudipController {
         }
     }
 
+    /**
+     *
+     */
     private function addSearchSidebar() {
         $sidebar = Sidebar::get();
 
         // add some text
-        $info_widget = new InfoboxWidget();
-        $info_widget->setTitle(_('Information'));
-        $info_widget->addElement(new InfoboxElement(_('Suchen Sie nach Veranstaltungen, Personen, Dateien, Einrichtungen, Räumen, Forenpostings und Wiki-Einträgen.'), Icon::create('info')));
-        $sidebar->addWidget($info_widget);
+        $sidebar->addWidget($this->getInfoWidget());
+        $sidebar->addWidget($this->getOptionsWidget());
 
-        // add the results
-        $options_widget = new OptionsWidget;
-        $options_widget->setTitle(_('Ergebnisse'));
-        if ($this->search->count) {
-            $_SESSION['global_search']['show']['all']  = Request::option('show') === 'all' ? true : false;
-            $_SESSION['global_search']['show']['some'] = false;
-            $options_widget->addCheckbox(_('Alle') . " ({$this->search->count})",
-                                        $_SESSION['global_search']['show']['all'],
-                                        URLHelper::getURL('', array("search" => $this->search->query, "show" => "all")),
-                                        URLHelper::getURL('', array("search" => $this->search->query, "show" => "none")));//, !$this->search->filter ? 'icons/16/black/arr_1right.png' : '');
-        }
-        foreach ($this->search->resultTypes as $type => $results) {
-            $_SESSION['global_search']['show'][$type] = Request::option('show') === $type ? true : false;
-            if ($_SESSION['global_search']['show'][$type] === true && $_SESSION['global_search']['show']['all'] === false) {
-                $_SESSION['global_search']['show']['some'] = true;
-            }
-            $options_widget->addCheckbox(IntelligentSearch::getTypeName($type) . " ($results)",
-                                        $_SESSION['global_search']['show'][$type],
-                                        URLHelper::getURL('', array("search" => $this->search->query, "filter" => $type, "show" => $type)),
-                                        URLHelper::getURL('', array("search" => $this->search->query, "show" => $type."_off")));//, $type == $this->search->filter ? 'icons/16/black/arr_1right.png' : '');
-        }
-        var_dump($_SESSION['global_search']);
-        $sidebar->addWidget($options_widget);
-
+        var_dump($_SESSION['global_search']['show']);
         // On develop display runtime
         if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
-            $info = new SidebarWidget();
-            $info->setTitle(_('Laufzeit'));
-            $info->addElement(new InfoboxElement($this->search->time));
-            $sidebar->addWidget($info);
+            $sidebar->addWidget($this->getRuntimeWidget());
         }
     }
 
@@ -110,4 +85,82 @@ class ShowController extends StudipController {
         return PluginEngine::getURL($this->dispatcher->plugin, $params, join('/', $args));
     }
 
+    private function getInfoWidget()
+    {
+        $info_widget = new InfoboxWidget();
+        $info_widget->setTitle(_('Information'));
+        $info_widget->addElement(new InfoboxElement(_('Suchen Sie nach Veranstaltungen, Personen, Dateien, Einrichtungen, Räumen, Forenpostings und Wiki-Einträgen.'), Icon::create('info')));
+        return $info_widget;
+    }
+
+    private function getOptionsWidget()
+    {
+        $options_widget = new OptionsWidget;
+        $options_widget->setTitle(_('Ergebnisse'));
+        if ($this->search->count) {
+            $_SESSION['global_search']['show']['all']  = Request::option('show') === 'all' ? true : false;
+            $_SESSION['global_search']['show']['some'] = false;
+            $options_widget->addCheckbox(_('Alle') . " ({$this->search->count})",
+                $_SESSION['global_search']['show']['all'],
+                URLHelper::getURL('', array("search" => $this->search->query, "show" => "all")),
+                URLHelper::getURL('', array("search" => $this->search->query, "show" => "not_all")));
+        }
+
+        foreach ($this->search->resultTypes as $type => $results) {
+            if (Request::option('show') === $type) {
+                $_SESSION['global_search']['show'][$type] = true;
+            } elseif (Request::option('show') === $type . "_off") {
+                $_SESSION['global_search']['show'][$type] = false;
+            }
+            if ($_SESSION['global_search']['show'][$type] === true && $_SESSION['global_search']['show']['all'] === false) {
+                $_SESSION['global_search']['show']['some'] = true;
+            }
+            $options_widget->addCheckbox(IntelligentSearch::getTypeName($type) . " ($results)",
+                $_SESSION['global_search']['show'][$type],
+                //$this->url_for('admin/courses/set_view_filter/' . $type . '/' . $state),
+                URLHelper::getURL('', array("search" => $this->search->query, "filter" => $this->getFilterArray(), "show" => $type)),
+                URLHelper::getURL('', array("search" => $this->search->query, "filter" => $this->getFilterArray(), "show" => $type."_off")));
+        }
+        return $options_widget;
+    }
+
+    private function getRuntimeWidget()
+    {
+        $runtime_widget = new SidebarWidget();
+        $runtime_widget->setTitle(_('Laufzeit'));
+        $runtime_widget->addElement(new InfoboxElement($this->search->time));
+        return $runtime_widget;
+    }
+
+    public function getFilterArray()
+    {
+        $filters = array();
+        foreach ($_SESSION['global_search']['show'] as $i => $value) {
+            if ($_SESSION['global_search']['show'][$i]) {
+                array_push($filters, $i);
+            }
+        }
+        return $filters;
+    }
+
+    /**
+     * Set the selected search filter and store the selection in configuration
+     */
+    public function set_search_filter_action($filter = null, $state = true)
+    {
+        // store view filter in configuration
+        if (!is_null($filter)) {
+            $filters = $this->getFilterConfig();
+
+            if ($state) {
+                $filters = array_diff($filters, array($filter));
+            } else {
+                $filters[] = $filter;
+            }
+
+            $this->setFilterConfig($filters);
+        }
+
+        $this->redirect('admin/courses/index');
+    }
 }

@@ -11,13 +11,11 @@
     <? endif; ?>
 <? endif; ?>
 
-<? if ($search->results && ($_SESSION['global_search']['show']['all']) || $_SESSION['global_search']['show']['some']): ?>
+<? if ($search->results): ?>
     <section class="search_results">
         <? foreach ($search->resultPage(Request::get('page')) as $result): ?>
             <article>
-                <? if (!$search->filter): ?>
-                    <p class="result_type"><?= IntelligentSearch::getTypeName($result['type']) ?></p>
-                <? endif; ?>
+                <p class="result_type"><?= IntelligentSearch::getTypeName($result['type']) ?></p>
                 <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
                 <?= IntelligentSearch::getInfo($result, $search->query) ?>
             </article>
