@@ -129,7 +129,6 @@ class IntelligentSearch extends SearchType {
 
     public function query($query, $filter = null) {
         $this->query = $query;
-        var_dump($filter);
         $this->filter = $filter;
         if (strlen($query) >= $this->minLength) {
             $this->search();

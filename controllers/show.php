@@ -13,15 +13,21 @@ class ShowController extends StudipController {
 
         // Find query
         $this->query = Request::get('utf8') ? studip_utf8decode(Request::get('search')) : Request::get('search');
+        if ($this->query || Request::submitted('search')) {
+            if ($_SESSION['global_search']['query'] !== $this->query) {
+                $this->resetFilter();
+            }
+            $_SESSION['global_search']['query'] = $this->query;
+        }
     }
 
     public function index_action() {
 
         $this->createSidebar();
 
-        if (Request::submitted('search')) {
+        if ($_SESSION['global_search']['query']) {
             $this->search = new IntelligentSearch();
-            $this->search->query($this->query, $this->getFilterArray());
+            $this->search->query($_SESSION['global_search']['query'], $this->getFilterArray());
         }
         $this->addSearchSidebar();
     }
@@ -61,7 +67,6 @@ class ShowController extends StudipController {
         $sidebar->addWidget($this->getInfoWidget());
         $sidebar->addWidget($this->getOptionsWidget());
 
-        var_dump($_SESSION['global_search']['show']);
         // On develop display runtime
         if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
             $sidebar->addWidget($this->getRuntimeWidget());
@@ -96,30 +101,13 @@ class ShowController extends StudipController {
     private function getOptionsWidget()
     {
         $options_widget = new OptionsWidget;
-        $options_widget->setTitle(_('Ergebnisse'));
-        if ($this->search->count) {
-            $_SESSION['global_search']['show']['all']  = Request::option('show') === 'all' ? true : false;
-            $_SESSION['global_search']['show']['some'] = false;
-            $options_widget->addCheckbox(_('Alle') . " ({$this->search->count})",
-                $_SESSION['global_search']['show']['all'],
-                URLHelper::getURL('', array("search" => $this->search->query, "show" => "all")),
-                URLHelper::getURL('', array("search" => $this->search->query, "show" => "not_all")));
-        }
+        $options_widget->setTitle(_('Ergebnisse') . " ({$this->search->count})");
 
         foreach ($this->search->resultTypes as $type => $results) {
-            if (Request::option('show') === $type) {
-                $_SESSION['global_search']['show'][$type] = true;
-            } elseif (Request::option('show') === $type . "_off") {
-                $_SESSION['global_search']['show'][$type] = false;
-            }
-            if ($_SESSION['global_search']['show'][$type] === true && $_SESSION['global_search']['show']['all'] === false) {
-                $_SESSION['global_search']['show']['some'] = true;
-            }
             $options_widget->addCheckbox(IntelligentSearch::getTypeName($type) . " ($results)",
                 $_SESSION['global_search']['show'][$type],
-                //$this->url_for('admin/courses/set_view_filter/' . $type . '/' . $state),
-                URLHelper::getURL('', array("search" => $this->search->query, "filter" => $this->getFilterArray(), "show" => $type)),
-                URLHelper::getURL('', array("search" => $this->search->query, "filter" => $this->getFilterArray(), "show" => $type."_off")));
+                $this->url_for('show/set_search_filter/' . $type . '/' . true),
+                $this->url_for('show/set_search_filter/' . $type . '/' . false));
         }
         return $options_widget;
     }
@@ -135,9 +123,9 @@ class ShowController extends StudipController {
     public function getFilterArray()
     {
         $filters = array();
-        foreach ($_SESSION['global_search']['show'] as $i => $value) {
-            if ($_SESSION['global_search']['show'][$i]) {
-                array_push($filters, $i);
+        foreach ($_SESSION['global_search']['show'] as $type => $value) {
+            if ($_SESSION['global_search']['show'][$type]) {
+                array_push($filters, $type);
             }
         }
         return $filters;
@@ -148,19 +136,18 @@ class ShowController extends StudipController {
      */
     public function set_search_filter_action($filter = null, $state = true)
     {
-        // store view filter in configuration
+        // store view filter in $_SESSION
         if (!is_null($filter)) {
-            $filters = $this->getFilterConfig();
-
-            if ($state) {
-                $filters = array_diff($filters, array($filter));
-            } else {
-                $filters[] = $filter;
-            }
-
-            $this->setFilterConfig($filters);
+            $_SESSION['global_search']['show'][$filter] = (bool) $state;
         }
 
-        $this->redirect('admin/courses/index');
+        $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
+    }
+
+    private function resetFilter()
+    {
+        foreach ($_SESSION['global_search']['show'] as $type => $value) {
+            $_SESSION['global_search']['show'][$type] = (bool) false;
+        }
     }
 }
