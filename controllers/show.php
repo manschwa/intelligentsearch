@@ -103,6 +103,10 @@ class ShowController extends StudipController {
         $options_widget = new OptionsWidget;
         $options_widget->setTitle(_('Ergebnisse') . " ({$this->search->count})");
 
+        if ($this->getFilterArray()) {
+            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
+            $options_widget->addElement($reset_element);
+        }
         foreach ($this->search->resultTypes as $type => $results) {
             $options_widget->addCheckbox(IntelligentSearch::getTypeName($type) . " ($results)",
                 $_SESSION['global_search']['show'][$type],
@@ -141,6 +145,11 @@ class ShowController extends StudipController {
             $_SESSION['global_search']['show'][$filter] = (bool) $state;
         }
 
+        $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
+    }
+
+    public function reset_search_filter_action() {
+        $this->resetFilter();
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
