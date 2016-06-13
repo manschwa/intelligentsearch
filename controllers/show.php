@@ -27,7 +27,7 @@ class ShowController extends StudipController {
 
         if ($_SESSION['global_search']['query']) {
             $this->search = new IntelligentSearch();
-            $this->search->query($_SESSION['global_search']['query'], $this->getFilterArray());
+            $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
         }
         $this->addSearchSidebar();
     }
@@ -65,7 +65,8 @@ class ShowController extends StudipController {
 
         // add some text
         $sidebar->addWidget($this->getInfoWidget());
-        $sidebar->addWidget($this->getOptionsWidget());
+        $sidebar->addWidget($this->getCategoryWidget());
+        $sidebar->addWidget($this->getFacetsWidget());
 
         // On develop display runtime
         if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
@@ -98,10 +99,40 @@ class ShowController extends StudipController {
         return $info_widget;
     }
 
-    private function getOptionsWidget()
+    /**
+     * Build a LinksWidget for the sidebar to filter out a specific category from your search results.
+     * There should only be one category selected at a time.
+     *
+     * @return LinksWidget containing all categories included in the search result.
+     */
+    private function getCategoryWidget()
+    {
+        $category_widget = new LinksWidget();
+        $category_widget->setTitle(_('Ergebnisse') . " ({$this->search->count})");
+
+        if ($this->getCategoryFilter()) {
+            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
+            $category_widget->addElement($reset_element);
+        }
+        foreach ($this->search->resultTypes as $type => $results) {
+            $category_widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)",
+                $this->url_for('show/set_category_filter/' . $type),
+                $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
+        }
+        return $category_widget;
+    }
+
+    /**
+     * Build an OptionsWidget for the sidebar to choose category specific filters for your search results.
+     * The filter options shown depend on the chosen category.
+     * There can be more than one filter selected per category.
+     *
+     * @return OptionsWidget containing category specific filter options.
+     */
+    private function getFacetsWidget()
     {
         $options_widget = new OptionsWidget;
-        $options_widget->setTitle(_('Ergebnisse') . " ({$this->search->count})");
+        $options_widget->setTitle(_('Filtern nach') . " ({$this->search->count})");
 
         if ($this->getFilterArray()) {
             $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
@@ -124,6 +155,16 @@ class ShowController extends StudipController {
         return $runtime_widget;
     }
 
+    /**
+     * Getting the category filter type that should be shown in the search.
+     *
+     * @return String: category type
+     */
+    public function getCategoryFilter()
+    {
+        return $_SESSION['global_search']['category'];
+    }
+
     public function getFilterArray()
     {
         $filters = array();
@@ -136,13 +177,23 @@ class ShowController extends StudipController {
     }
 
     /**
-     * Set the selected search filter and store the selection in configuration
+     * Set the selected search filter and store the selection in the $_SESSION variable
      */
     public function set_search_filter_action($filter = null, $state = true)
     {
         // store view filter in $_SESSION
         if (!is_null($filter)) {
             $_SESSION['global_search']['show'][$filter] = (bool) $state;
+        }
+
+        $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
+    }
+
+    public function set_category_filter_action($category = null)
+    {
+        // store category filter in $_SESSION
+        if (!is_null($category)) {
+            $_SESSION['global_search']['category'] = $category;
         }
 
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
@@ -158,5 +209,6 @@ class ShowController extends StudipController {
         foreach ($_SESSION['global_search']['show'] as $type => $value) {
             $_SESSION['global_search']['show'][$type] = (bool) false;
         }
+        $_SESSION['global_search']['category'] = null;
     }
 }

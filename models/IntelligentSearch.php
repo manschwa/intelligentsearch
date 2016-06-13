@@ -119,6 +119,7 @@ class IntelligentSearch extends SearchType {
 		);
 
     public $query;
+    public $filter;
     public $results = array();
     public $resultTypes = array();
     public $time = 0;
@@ -148,7 +149,7 @@ class IntelligentSearch extends SearchType {
         $statement = $this->getResultSet();
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
 
-            if (!$this->filter || in_array($object['type'], $this->filter)) {
+            if (!$this->filter || $object['type'] === $this->filter) {
                 $object['link'] = self::getLink($object);
                 $this->results[] = $object;
             }
