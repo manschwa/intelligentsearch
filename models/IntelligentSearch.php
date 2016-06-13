@@ -128,7 +128,8 @@ class IntelligentSearch extends SearchType {
     public $resultsPerPage = 30;
     public $minLength = 4;
 
-    public function query($query, $filter = null) {
+    public function query($query, $filter = null)
+    {
         $this->query = $query;
         $this->filter = $filter;
         if (strlen($query) >= $this->minLength) {
@@ -138,11 +139,13 @@ class IntelligentSearch extends SearchType {
         }
     }
 
-    public function resultPage($page = 0) {
+    public function resultPage($page = 0)
+    {
         return array_slice($this->results, $page * $this->resultsPerPage, $this->resultsPerPage);
     }
 
-    private function search() {
+    private function search()
+    {
         // Timecapture
         $time = microtime(1);
 
@@ -160,17 +163,17 @@ class IntelligentSearch extends SearchType {
         $this->time = microtime(1) - $time;
     }
 
-    private function getResultSet($limit = null) {   
-        
+    private function getResultSet($limit = null)
+    {
         // Find out single words
         $words = explode(' ', $this->query);
-        
+
         // Filter for stopwords
         $words = self::filterStopwords($words);
-        
+
         // Stick em together
         $search = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-        
+
         $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
                 . "SELECT object_id,text "
                 . "FROM search_index "
@@ -183,7 +186,8 @@ class IntelligentSearch extends SearchType {
         return $statement;
     }
 
-    public static function buildWhere() {
+    public static function buildWhere()
+    {
         if ($GLOBALS['perm']->have_perm('root')) {
             return "";
         }
@@ -200,21 +204,25 @@ class IntelligentSearch extends SearchType {
         return " WHERE " . join(' OR ', $condititions);
     }
 
-    public static function getTypeName($key) {
+    public static function getTypeName($key)
+    {
         $class = self::getClass($key);
         return $class::getName();
     }
 
-    private static function getClass($type) {
+    private static function getClass($type)
+    {
         return "IndexObject_" . ucfirst($type);
     }
 
-    public static function getLink($object) {
+    public static function getLink($object)
+    {
         $class = self::getClass($object['type']);
         return $class::link($object);
     }
 
-    public static function getInfo($object, $query) {
+    public static function getInfo($object, $query)
+    {
         // Cut down if info is to long
         if (strlen($object['text']) > 200) {
             $object['text'] = substr($object['text'], max(array(0, self::findWordPosition($query, $object['text']) - 100)), 200);
@@ -228,12 +236,13 @@ class IntelligentSearch extends SearchType {
         }, htmlReady($object['text']));
     }
 
-    public function includePath() {
+    public function includePath()
+    {
         return __FILE__;
     }
 
-    public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0) {
-
+    public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0)
+    {
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             include $indexFile;
         }
@@ -246,7 +255,8 @@ class IntelligentSearch extends SearchType {
         return $result;
     }
 
-    public function getAvatarImageTag($id) {
+    public function getAvatarImageTag($id)
+    {
         $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
         $stmt->execute(array($id));
         $object = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -254,15 +264,18 @@ class IntelligentSearch extends SearchType {
         return $class::getAvatar($object);
     }
 
-    public function getPages($current = 1) {
+    public function getPages($current = 1)
+    {
         return array_slice(range(1, $this->countResultPages() - 1), min(array(max(array(0, $current - 5)), $this->countResultPages() - 10)), 10);
     }
 
-    public function countResultPages() {
+    public function countResultPages()
+    {
         return ceil(count($this->results) / $this->resultsPerPage);
     }
-    
-    private static function findWordPosition($words, $text) {
+
+    private static function findWordPosition($words, $text)
+    {
         foreach (explode(' ', $words) as $word) {
             $pos = stripos($text, $word);
             if ($pos) {
@@ -270,8 +283,9 @@ class IntelligentSearch extends SearchType {
             }
         }
     }
-    
-    private static function filterStopwords($input) {
+
+    private static function filterStopwords($input)
+    {
         $new = $input;
         foreach ($input as $key => $test) {
             if (in_array($test, self::$STOPWORDS)) {
@@ -283,6 +297,11 @@ class IntelligentSearch extends SearchType {
             return $new;
         }
         return $input;
+    }
+
+    public static function getFilterOptions($type)
+    {
+        
     }
 
 }

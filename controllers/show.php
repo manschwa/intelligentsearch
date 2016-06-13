@@ -1,14 +1,16 @@
 <?php
 
-class ShowController extends StudipController {
+class ShowController extends StudipController
+{
 
-    public function __construct($dispatcher) {
+    public function __construct($dispatcher)
+    {
         parent::__construct($dispatcher);
         $this->plugin = $dispatcher->plugin;
     }
 
-    public function before_filter(&$action, &$args) {
-
+    public function before_filter(&$action, &$args)
+    {
         $this->set_layout($GLOBALS['template_factory']->open('layouts/base_without_infobox'));
 
         // Find query
@@ -21,8 +23,8 @@ class ShowController extends StudipController {
         }
     }
 
-    public function index_action() {
-
+    public function index_action()
+    {
         $this->createSidebar();
 
         if ($_SESSION['global_search']['query']) {
@@ -32,20 +34,23 @@ class ShowController extends StudipController {
         $this->addSearchSidebar();
     }
 
-    public function open_action($id) {
+    public function open_action($id)
+    {
         $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
         $stmt->execute(array($id));
         $location = $GLOBALS['ABSOLUTE_URI_STUDIP'].IntelligentSearch::getLink($stmt->fetch(PDO::FETCH_ASSOC));
         header("location: $location");die;
     }
 
-    public function fast_action($restriction = null) {
+    public function fast_action($restriction = null)
+    {
         $GLOBALS['perm']->check('root');
         $this->time = IndexManager::sqlIndex($restriction);
         $this->redirect('show/index');
     }
 
-    private function createSidebar() {
+    private function createSidebar()
+    {
         $sidebar = Sidebar::get();
         $sidebar->setImage('sidebar/search-sidebar.png');
 
@@ -60,13 +65,16 @@ class ShowController extends StudipController {
     /**
      *
      */
-    private function addSearchSidebar() {
+    private function addSearchSidebar()
+    {
         $sidebar = Sidebar::get();
 
         // add some text
         $sidebar->addWidget($this->getInfoWidget());
         $sidebar->addWidget($this->getCategoryWidget());
-        $sidebar->addWidget($this->getFacetsWidget());
+        if ($type = $_SESSION['global_search']['category']) {
+            $sidebar->addWidget($this->getFacetsWidget($type));
+        }
 
         // On develop display runtime
         if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
@@ -75,7 +83,8 @@ class ShowController extends StudipController {
     }
 
     // customized #url_for for plugins
-    function url_for($to) {
+    function url_for($to)
+    {
         $args = func_get_args();
 
         # find params
@@ -110,10 +119,12 @@ class ShowController extends StudipController {
         $category_widget = new LinksWidget();
         $category_widget->setTitle(_('Ergebnisse') . " ({$this->search->count})");
 
+        // offer a reset options only if there is a category selected
         if ($this->getCategoryFilter()) {
             $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
             $category_widget->addElement($reset_element);
         }
+        // list all categories included in the result set as Links
         foreach ($this->search->resultTypes as $type => $results) {
             $category_widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)",
                 $this->url_for('show/set_category_filter/' . $type),
@@ -129,17 +140,18 @@ class ShowController extends StudipController {
      *
      * @return OptionsWidget containing category specific filter options.
      */
-    private function getFacetsWidget()
+    private function getFacetsWidget($type)
     {
         $options_widget = new OptionsWidget;
-        $options_widget->setTitle(_('Filtern nach') . " ({$this->search->count})");
+        $options_widget->setTitle(_('Filtern nach'));
+        $filter_options = IntelligentSearch::getFilterOptions($type);
 
         if ($this->getFilterArray()) {
             $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
             $options_widget->addElement($reset_element);
         }
-        foreach ($this->search->resultTypes as $type => $results) {
-            $options_widget->addCheckbox(IntelligentSearch::getTypeName($type) . " ($results)",
+        foreach ($this->search->resultTypes as $filter => $filter_options) {
+            $options_widget->addCheckbox($filter,
                 $_SESSION['global_search']['show'][$type],
                 $this->url_for('show/set_search_filter/' . $type . '/' . true),
                 $this->url_for('show/set_search_filter/' . $type . '/' . false));
