@@ -25,21 +25,11 @@ class ShowController extends StudipController
 
     public function index_action()
     {
-        $this->createSidebar();
-
         if ($_SESSION['global_search']['query']) {
             $this->search = new IntelligentSearch();
             $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
         }
         $this->addSearchSidebar();
-    }
-
-    public function open_action($id)
-    {
-        $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
-        $stmt->execute(array($id));
-        $location = $GLOBALS['ABSOLUTE_URI_STUDIP'].IntelligentSearch::getLink($stmt->fetch(PDO::FETCH_ASSOC));
-        header("location: $location");die;
     }
 
     public function fast_action($restriction = null)
@@ -49,31 +39,25 @@ class ShowController extends StudipController
         $this->redirect('show/index');
     }
 
-    private function createSidebar()
-    {
-        $sidebar = Sidebar::get();
-        $sidebar->setImage('sidebar/search-sidebar.png');
-
-        // Root may update index
-        if ($GLOBALS['perm']->have_perm('root')) {
-            $actions = new ActionsWidget();
-            $actions->addLink(_('Indizieren'), $this->url_for('show/fast'));
-            $sidebar->addWidget($actions);
-        }
-    }
-
     /**
      *
      */
     private function addSearchSidebar()
     {
         $sidebar = Sidebar::get();
+        $sidebar->setImage('sidebar/search-sidebar.png');
 
         // add some text
-        $sidebar->addWidget($this->getInfoWidget());
         $sidebar->addWidget($this->getCategoryWidget());
         if ($type = $_SESSION['global_search']['category']) {
             $sidebar->addWidget($this->getFacetsWidget($type));
+        }
+
+        // Root may update index
+        if ($GLOBALS['perm']->have_perm('root')) {
+            $actions = new ActionsWidget();
+            $actions->addLink(_('Indizieren'), $this->url_for('show/fast'));
+            $sidebar->addWidget($actions);
         }
 
         // On develop display runtime
@@ -121,12 +105,12 @@ class ShowController extends StudipController
 
         // offer a reset options only if there is a category selected
         if ($this->getCategoryFilter()) {
-            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
+            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_category_filter'));
             $category_widget->addElement($reset_element);
         }
         // list all categories included in the result set as Links
-        foreach ($this->search->resultTypes as $type => $results) {
-            $category_widget->addLink(IntelligentSearch::getTypeName($type) . " ($results)",
+        foreach (IntelligentSearch::getIndexObjectTypes() as $type) {
+            $category_widget->addLink(IntelligentSearch::getTypeName($type),// . " ($results)",
                 $this->url_for('show/set_category_filter/' . $type),
                 $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
         }
@@ -138,23 +122,25 @@ class ShowController extends StudipController
      * The filter options shown depend on the chosen category.
      * There can be more than one filter selected per category.
      *
+     * @param $type string
      * @return OptionsWidget containing category specific filter options.
      */
     private function getFacetsWidget($type)
     {
         $options_widget = new OptionsWidget;
         $options_widget->setTitle(_('Filtern nach'));
-        $filter_options = IntelligentSearch::getFilterOptions($type);
+        $filter_options = $this->getFilters($type);
 
-        if ($this->getFilterArray()) {
-            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_search_filter'));
+        if ($this->getActiveFilters($type)) {
+            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_filter'));
             $options_widget->addElement($reset_element);
         }
-        foreach ($this->search->resultTypes as $filter => $filter_options) {
+
+        foreach ($filter_options as $filter) {
             $options_widget->addCheckbox($filter,
-                $_SESSION['global_search']['show'][$type],
-                $this->url_for('show/set_search_filter/' . $type . '/' . true),
-                $this->url_for('show/set_search_filter/' . $type . '/' . false));
+                $_SESSION['global_search']['filters'][$filter],
+                $this->url_for('show/set_filter/' . $type . '/' . $filter . '/' . true),
+                $this->url_for('show/set_filter/' . $type . '/' . $filter . '/' . false));
         }
         return $options_widget;
     }
@@ -168,7 +154,7 @@ class ShowController extends StudipController
     }
 
     /**
-     * Getting the category filter type that should be shown in the search.
+     * Getting the category type that should be shown in the search.
      *
      * @return String: category type
      */
@@ -177,50 +163,83 @@ class ShowController extends StudipController
         return $_SESSION['global_search']['category'];
     }
 
-    public function getFilterArray()
+    /**
+     * @param $type string: category
+     * @return array containing all the possible filters for the given category type.
+     */
+    private function getFilters($type)
+    {
+            return IntelligentSearch::getFilterOptions($type);
+    }
+
+    /**
+     * Retruns the active filter options for the given category type chosen by the user.
+     *
+     * @param $type string: category type
+     * @return array containing only the checked/active filters for the given category.
+     */
+    private function getActiveFilters($type)
     {
         $filters = array();
-        foreach ($_SESSION['global_search']['show'] as $type => $value) {
-            if ($_SESSION['global_search']['show'][$type]) {
-                array_push($filters, $type);
+        foreach ($_SESSION['global_search']['filters'] as $filter => $value) {
+            if ($_SESSION['global_search']['filters'][$filter]) {
+                array_push($filters, $filter);
             }
         }
         return $filters;
     }
 
     /**
-     * Set the selected search filter and store the selection in the $_SESSION variable
+     * Set the selected category specific search filter and store the selection in the $_SESSION variable.
+     *
+     * @param $type string
+     * @param null $filter string
+     * @param bool $state
+     * @throws Trails_DoubleRenderError
      */
-    public function set_search_filter_action($filter = null, $state = true)
+    public function set_filter_action($type, $filter = null, $state = true)
     {
         // store view filter in $_SESSION
-        if (!is_null($filter)) {
-            $_SESSION['global_search']['show'][$filter] = (bool) $state;
+        if (!is_null($type) && !is_null($filter)) {
+            $_SESSION['global_search']['filters'][$filter] = (bool)$state;
         }
-
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
+    /**
+     * Set the category (highest level of the search) that should be searched for.
+     *
+     * @param null $category string: category type
+     * @throws Trails_DoubleRenderError
+     */
     public function set_category_filter_action($category = null)
     {
         // store category filter in $_SESSION
         if (!is_null($category)) {
+            $this->resetFilter();
             $_SESSION['global_search']['category'] = $category;
         }
-
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
-    public function reset_search_filter_action() {
+    public function reset_category_filter_action() {
+        $this->resetCategoryFilter();
+        $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
+    }
+
+    public function reset_filter_action() {
         $this->resetFilter();
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
     private function resetFilter()
     {
-        foreach ($_SESSION['global_search']['show'] as $type => $value) {
-            $_SESSION['global_search']['show'][$type] = (bool) false;
-        }
+        $_SESSION['global_search']['filters'] = null;
+    }
+
+    private function resetCategoryFilter()
+    {
+        $this->resetFilter();
         $_SESSION['global_search']['category'] = null;
     }
 }

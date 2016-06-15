@@ -1,7 +1,7 @@
 <?php
 
 class IntelligentSearch extends SearchType {
-    
+
     private static $STOPWORDS = array(
 			"ab",  "bei",  "da",  "deshalb",  "ein",  "für",  "finde",  "haben",  "hier",  "ich",  "ja", 
 			"kann",  "machen",  "muesste",  "nach",  "oder",  "seid",  "sonst",  "und",  "vom",  "wann",  "wenn", 
@@ -204,6 +204,18 @@ class IntelligentSearch extends SearchType {
         return " WHERE " . join(' OR ', $condititions);
     }
 
+    public static function getIndexObjectTypes()
+    {
+        $types = array();
+        foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
+            $indexClass = basename($indexFile, ".php");
+            $typename = explode('_', $indexClass);
+            $typename = strtolower($typename[1]);
+            array_push($types, $typename);
+        }
+        return $types;
+    }
+
     public static function getTypeName($key)
     {
         $class = self::getClass($key);
@@ -301,7 +313,11 @@ class IntelligentSearch extends SearchType {
 
     public static function getFilterOptions($type)
     {
-        
+        $className = self::getClass($type);
+        if (method_exists($className, 'getFilters')) {
+            $filters = $className::getFilters();
+        }
+        return $filters;
     }
 
 }

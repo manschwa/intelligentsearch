@@ -2,7 +2,10 @@
 
 class IndexObject_User {
 
+    // arbitrary rating value for this object class for the search presentation
     const RATING_USER = 0.9;
+    // Objects of this class can be filtered by:
+    const FILTERS = array('Admin', 'Dozent', 'Tutor', 'Autor');
 
     public static function sqlIndex() {
         IndexManager::createObjects("SELECT user_id, 'user', CONCAT_WS(' ',title_front, Vorname, Nachname, title_rear), username, null FROM auth_user_md5 JOIN user_info USING (user_id)");
@@ -26,6 +29,14 @@ class IndexObject_User {
 
     public static function getAvatar($object) {
         return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFilters()
+    {
+        return self::FILTERS;
     }
 
 }

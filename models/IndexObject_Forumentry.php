@@ -5,6 +5,7 @@ class IndexObject_Forumentry {
     const RATING_FORUMENTRY = 0.6;
     const RATING_FORUMAUTHOR = 0.7;
     const RATING_FORUMENTRY_TITLE = 0.75;
+    const FILTERS = array('Foo', 'Bar', 'Foobar');
 
     public static function sqlIndex() {
         IndexManager::createObjects("SELECT topic_id, 'forumentry', CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(forum_entries.name), ''), '" . _('Forumeintrag') . "')), seminar_id, null FROM forum_entries JOIN seminare USING (seminar_id) WHERE seminar_id != topic_id");
@@ -27,6 +28,14 @@ class IndexObject_Forumentry {
 
     public static function getAvatar() {
         return Assets::img('icons/16/black/forum.png');
+    }
+
+    /**
+     * @return array
+     */
+    public static function getFilters()
+    {
+        return self::FILTERS;
     }
 
 }

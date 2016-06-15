@@ -21,7 +21,7 @@
             </article>
         <? endforeach; ?>
     </section>
-<? elseif ($search->query && !$search->error && $_SESSION['global_search']['show']['all']): ?>
+<? elseif ($search->query && !$search->error): ?>
     <?= _('Leider keine Treffer.') ?>
 <? endif; ?>
 <?= $this->render_partial('show/_pagination.php', array('search' => $search)) ?>
