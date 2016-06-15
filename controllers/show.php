@@ -101,7 +101,8 @@ class ShowController extends StudipController
     private function getCategoryWidget()
     {
         $category_widget = new LinksWidget();
-        $category_widget->setTitle(_('Ergebnisse') . " ({$this->search->count})");
+        $result_count = $this->search->count ? " ({$this->search->count})" : '';
+        $category_widget->setTitle(_('Ergebnisse') . $result_count);
 
         // offer a reset options only if there is a category selected
         if ($this->getCategoryFilter()) {
@@ -110,7 +111,8 @@ class ShowController extends StudipController
         }
         // list all categories included in the result set as Links
         foreach (IntelligentSearch::getIndexObjectTypes() as $type) {
-            $category_widget->addLink(IntelligentSearch::getTypeName($type),// . " ($results)",
+            $facet_count = $this->search->resultTypes[$type] ? " ({$this->search->resultTypes[$type]})" : '';
+            $category_widget->addLink(IntelligentSearch::getTypeName($type) . $facet_count,
                 $this->url_for('show/set_category_filter/' . $type),
                 $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
         }
