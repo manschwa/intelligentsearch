@@ -32,7 +32,7 @@ class ShowController extends StudipController
         $this->addSearchSidebar();
     }
 
-    public function fast_action($restriction = null)
+    public function indexing_action($restriction = null)
     {
         $GLOBALS['perm']->check('root');
         $this->time = IndexManager::sqlIndex($restriction);
@@ -56,7 +56,7 @@ class ShowController extends StudipController
         // Root may update index
         if ($GLOBALS['perm']->have_perm('root')) {
             $actions = new ActionsWidget();
-            $actions->addLink(_('Indizieren'), $this->url_for('show/fast'));
+            $actions->addLink(_('Indizieren'), $this->url_for('show/indexing'));
             $sidebar->addWidget($actions);
         }
 
