@@ -119,14 +119,14 @@ class IntelligentSearch extends SearchType {
 		);
 
     public $query;
-    public $filter;
+    private $filter;
     public $results = array();
     public $resultTypes = array();
     public $time = 0;
     public $count = 0;
     public $error;
-    public $resultsPerPage = 30;
-    public $minLength = 4;
+    private $resultsPerPage = 30;
+    private $minLength = 4;
 
     public function query($query, $filter = null)
     {
@@ -320,4 +320,51 @@ class IntelligentSearch extends SearchType {
         return $filters;
     }
 
+    /**
+     * @return int
+     */
+    public function getCount()
+    {
+        return $this->count;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    /**
+     * @return array
+     */
+    public function getResultTypes()
+    {
+        return $this->resultTypes;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTime()
+    {
+            return isset($this->time) ? $this->time : null;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getError()
+    {
+        return $this->error;
+    }
+
+    /**
+     * @return array
+     */
+    public function getResultsArray()
+    {
+        return $this->results;
+    }
 }

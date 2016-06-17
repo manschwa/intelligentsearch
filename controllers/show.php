@@ -36,7 +36,7 @@ class ShowController extends StudipController
     {
         $GLOBALS['perm']->check('root');
         $this->time = IndexManager::sqlIndex($restriction);
-        $this->redirect('show/index');
+        $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
     /**
@@ -107,14 +107,19 @@ class ShowController extends StudipController
         // offer a reset options only if there is a category selected
         if ($this->getCategoryFilter()) {
             $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_category_filter'));
+//            $reset_element->addClass('subclass');
             $category_widget->addElement($reset_element);
         }
-        // list all categories included in the result set as Links
+        // list all possible categories as Links
         foreach (IntelligentSearch::getIndexObjectTypes() as $type) {
             $facet_count = $this->search->resultTypes[$type] ? " ({$this->search->resultTypes[$type]})" : '';
-            $category_widget->addLink(IntelligentSearch::getTypeName($type) . $facet_count,
+            $category_link = new LinkElement(IntelligentSearch::getTypeName($type) . $facet_count,
                 $this->url_for('show/set_category_filter/' . $type),
                 $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
+            if (false) {
+                $category_link->addClass('subclass');
+            }
+            $category_widget->addElement($category_link);
         }
         return $category_widget;
     }

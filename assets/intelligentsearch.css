@@ -16,6 +16,9 @@ section.search_results article span.result {
 .intelligentsearch {
   display: none;
 }
+.subclass {
+    text-indent: 20px;
+}
 div.pagination {
   font-size: 1.4em;
 }
