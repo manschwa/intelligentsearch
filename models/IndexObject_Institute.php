@@ -10,7 +10,7 @@ class IndexObject_Institute {
     }
 
     public static function getName() {
-        return _('Einrichtung');
+        return _('Einrichtungen');
     }
 
     public static function link($object) {

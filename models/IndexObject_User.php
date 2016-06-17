@@ -38,5 +38,4 @@ class IndexObject_User {
     {
         return self::FILTERS;
     }
-
 }

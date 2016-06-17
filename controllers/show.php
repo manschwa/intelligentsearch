@@ -111,17 +111,34 @@ class ShowController extends StudipController
             $category_widget->addElement($reset_element);
         }
         // list all possible categories as Links
-        foreach (IntelligentSearch::getIndexObjectTypes() as $type) {
-            $facet_count = $this->search->resultTypes[$type] ? " ({$this->search->resultTypes[$type]})" : '';
-            $category_link = new LinkElement(IntelligentSearch::getTypeName($type) . $facet_count,
-                $this->url_for('show/set_category_filter/' . $type),
-                $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
-            if (false) {
-                $category_link->addClass('subclass');
+        $index_object_types = IntelligentSearch::getIndexObjectTypes();
+        foreach ($index_object_types as $type) {
+            $class = IntelligentSearch::getClass($type);
+            if (!method_exists($class, 'belongsTo')) {
+                $category_widget->addElement($this->categoryLink($type));
+                foreach ($index_object_types as $sub_category) {
+                    $sub_class = IntelligentSearch::getClass($sub_category);
+                    if (method_exists($sub_class, 'belongsTo')) {
+                        if ($sub_class::belongsTo($type) && $_SESSION['global_search']['category'] === $type) {
+                            $category_widget->addElement($this->categoryLink($sub_category)->addClass('subclass'));
+                        }
+                    }
+                }
             }
-            $category_widget->addElement($category_link);
         }
         return $category_widget;
+    }
+
+    /**
+     * @param $type string
+     * @return LinkElement
+     */
+    private function categoryLink($type)
+    {
+        $facet_count = $this->search->resultTypes[$type] ? " ({$this->search->resultTypes[$type]})" : '';
+        return new LinkElement(IntelligentSearch::getTypeName($type) . $facet_count,
+            $this->url_for('show/set_category_filter/' . $type),
+            $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
     }
 
     /**

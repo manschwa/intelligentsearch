@@ -5,6 +5,9 @@ class IndexObject_Document {
     const RATING_DOCUMENT_TITLE = 0.9;
     const RATING_DOCUMENT_DESCRIPTION = 0.8;
 
+    const FILTERS = array('Long', 'Short', 'PDF', 'TXT');
+    const BELONGS_TO = array('seminar', 'institute');
+
     public static function sqlIndex() {
         IndexManager::createObjects("SELECT dokument_id, 'document', CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(dokumente.name), ''), '" . _('Datei') . "')), seminar_id, range_id FROM dokumente JOIN seminare USING (seminar_id)");
         IndexManager::createIndex("SELECT object_id, name, " . IndexManager::relevance(self::RATING_DOCUMENT_TITLE, 'dokumente.chdate') . " FROM dokumente" . IndexManager::createJoin('dokument_id') . " WHERE name != ''");
@@ -12,7 +15,7 @@ class IndexObject_Document {
     }
 
     public static function getName() {
-        return _('Dokument');
+        return _('Dokumente');
     }
 
     public static function link($object) {
@@ -27,4 +30,20 @@ class IndexObject_Document {
         return Assets::img('icons/16/black/file.png');
     }
 
+    /**
+     * @return array
+     */
+    public static function getFilters()
+    {
+        return self::FILTERS;
+    }
+
+    /**
+     * @param $type string
+     * @return bool
+     */
+    public static function belongsTo($type)
+    {
+        return in_array($type, self::BELONGS_TO);
+    }
 }

@@ -222,7 +222,7 @@ class IntelligentSearch extends SearchType {
         return $class::getName();
     }
 
-    private static function getClass($type)
+    public static function getClass($type)
     {
         return "IndexObject_" . ucfirst($type);
     }
