@@ -114,17 +114,19 @@ class ShowController extends StudipController
         $index_object_types = IntelligentSearch::getIndexObjectTypes();
         foreach ($index_object_types as $type) {
             $class = IntelligentSearch::getClass($type);
-            if (!method_exists($class, 'belongsTo')) {
-                $category_widget->addElement($this->categoryLink($type));
-                foreach ($index_object_types as $sub_category) {
-                    $sub_class = IntelligentSearch::getClass($sub_category);
-                    if (method_exists($sub_class, 'belongsTo')) {
-                        if ($sub_class::belongsTo($type) && $_SESSION['global_search']['category'] === $type) {
-                            $category_widget->addElement($this->categoryLink($sub_category)->addClass('subclass'));
-                        }
-                    }
+//            if (!method_exists($class, 'belongsTo')) {
+                if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type]) {
+                    $category_widget->addElement($this->categoryLink($type));
+//                    foreach ($index_object_types as $sub_category) {
+//                        $sub_class = IntelligentSearch::getClass($sub_category);
+//                        if (method_exists($sub_class, 'belongsTo')) {
+//                            if ($sub_class::belongsTo($type) && $_SESSION['global_search']['category'] === $type) {
+//                                $category_widget->addElement($this->categoryLink($sub_category)->addClass('subclass'));
+//                            }
+//                        }
+//                    }
                 }
-            }
+//            }
         }
         return $category_widget;
     }
