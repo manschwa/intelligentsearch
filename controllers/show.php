@@ -50,7 +50,9 @@ class ShowController extends StudipController
         // add some text
         $sidebar->addWidget($this->getCategoryWidget());
         if ($type = $_SESSION['global_search']['category']) {
-            $sidebar->addWidget($this->getFacetsWidget($type));
+            $class = IntelligentSearch::getClass($type);
+            $object = new $class;
+            $sidebar->addWidget($this->getFacetsWidget($type, $object));
         }
 
         // Root may update index
@@ -114,9 +116,10 @@ class ShowController extends StudipController
         $index_object_types = IntelligentSearch::getIndexObjectTypes();
         foreach ($index_object_types as $type) {
             $class = IntelligentSearch::getClass($type);
+            $object = new $class;
 //            if (!method_exists($class, 'belongsTo')) {
-                if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type]) {
-                    $category_widget->addElement($this->categoryLink($type));
+            if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type]) {
+                $category_widget->addElement($this->categoryLink($type, $object));
 //                    foreach ($index_object_types as $sub_category) {
 //                        $sub_class = IntelligentSearch::getClass($sub_category);
 //                        if (method_exists($sub_class, 'belongsTo')) {
@@ -125,7 +128,7 @@ class ShowController extends StudipController
 //                            }
 //                        }
 //                    }
-                }
+            }
 //            }
         }
         return $category_widget;
@@ -135,10 +138,10 @@ class ShowController extends StudipController
      * @param $type string
      * @return LinkElement
      */
-    private function categoryLink($type)
+    private function categoryLink($type, $object)
     {
         $facet_count = $this->search->resultTypes[$type] ? " ({$this->search->resultTypes[$type]})" : '';
-        return new LinkElement(IntelligentSearch::getTypeName($type) . $facet_count,
+        return new LinkElement($object->getName() . $facet_count,
             $this->url_for('show/set_category_filter/' . $type),
             $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
     }
@@ -151,13 +154,13 @@ class ShowController extends StudipController
      * @param $type string
      * @return OptionsWidget containing category specific filter options.
      */
-    private function getFacetsWidget($type)
+    private function getFacetsWidget($type, $object)
     {
         $options_widget = new OptionsWidget;
         $options_widget->setTitle(_('Filtern nach'));
-        $filter_options = $this->getFilters($type);
+        $filter_options = $object->getFacets();
 
-        if ($this->getActiveFilters($type)) {
+        if ($this->getActiveFilters()) {
             $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_filter'));
             $options_widget->addElement($reset_element);
         }
@@ -193,18 +196,17 @@ class ShowController extends StudipController
      * @param $type string: category
      * @return array containing all the possible filters for the given category type.
      */
-    private function getFilters($type)
+    private function getFilters($object)
     {
             return IntelligentSearch::getFilterOptions($type);
     }
 
     /**
      * Retruns the active filter options for the given category type chosen by the user.
-     *
-     * @param $type string: category type
      * @return array containing only the checked/active filters for the given category.
+     * @internal param string $type : category type
      */
-    private function getActiveFilters($type)
+    private function getActiveFilters()
     {
         $filters = array();
         foreach ($_SESSION['global_search']['filters'] as $filter => $value) {
@@ -260,7 +262,7 @@ class ShowController extends StudipController
 
     private function resetFilter()
     {
-        $_SESSION['global_search']['filters'] = null;
+        $_SESSION['global_search']['filters'] = array();
     }
 
     private function resetCategoryFilter()

@@ -153,7 +153,10 @@ class IntelligentSearch extends SearchType {
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
 
             if (!$this->filter || $object['type'] === $this->filter) {
-                $object['link'] = self::getLink($object);
+                $class = self::getClass($object['type']);
+                $obj = new $class;
+                $object['name'] = $obj->getName();
+                $object['link'] = $obj->getLink($object);
                 $this->results[] = $object;
             }
             $this->resultTypes[$object['type']] ++;
@@ -216,21 +219,9 @@ class IntelligentSearch extends SearchType {
         return $types;
     }
 
-    public static function getTypeName($key)
-    {
-        $class = self::getClass($key);
-        return $class::getName();
-    }
-
     public static function getClass($type)
     {
         return "IndexObject_" . ucfirst($type);
-    }
-
-    public static function getLink($object)
-    {
-        $class = self::getClass($object['type']);
-        return $class::link($object);
     }
 
     public static function getInfo($object, $query)
@@ -309,15 +300,6 @@ class IntelligentSearch extends SearchType {
             return $new;
         }
         return $input;
-    }
-
-    public static function getFilterOptions($type)
-    {
-        $className = self::getClass($type);
-        if (method_exists($className, 'getFilters')) {
-            $filters = $className::getFilters();
-        }
-        return $filters;
     }
 
     /**

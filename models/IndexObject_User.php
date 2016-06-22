@@ -1,13 +1,19 @@
 <?php
 
-class IndexObject_User {
+class IndexObject_User extends IndexObject
+{
 
     // arbitrary rating value for this object class for the search presentation
     const RATING_USER = 0.9;
-    // Objects of this class can be filtered by:
-    const FILTERS = array('Admin', 'Dozent', 'Tutor', 'Autor');
 
-    public static function sqlIndex() {
+    public function __construct()
+    {
+        $this->setName(_('Benutzer'));
+        $this->setFacets(array('Admin', 'Dozent', 'Tutor', 'Autor'));
+    }
+
+    public function sqlIndex()
+    {
         IndexManager::createObjects("SELECT user_id, 'user', CONCAT_WS(' ',title_front, Vorname, Nachname, title_rear), username, null FROM auth_user_md5 JOIN user_info USING (user_id)");
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname, "
                 . "CONCAT('(', username, ')')), "
@@ -15,27 +21,18 @@ class IndexObject_User {
                 . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN user_info USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
     }
 
-    public static function getName() {
-        return _('Benutzer');
-    }
-
-    public static function link($object) {
+    public function getLink($object)
+    {
         return 'dispatch.php/profile?username=' . $object['range2'];
     }
 
-    public static function getCondition() {
+    public function getCondition()
+    {
         return "EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
     }
 
-    public static function getAvatar($object) {
-        return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
-    }
-
-    /**
-     * @return array
-     */
-    public static function getFilters()
+    public function getAvatar()
     {
-        return self::FILTERS;
+//        return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
     }
 }

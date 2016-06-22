@@ -15,7 +15,7 @@
     <section class="search_results">
         <? foreach ($this->search->resultPage(Request::get('page')) as $result): ?>
             <article>
-                <p class="result_type"><?= IntelligentSearch::getTypeName($result['type']) ?></p>
+                <p class="result_type"><?= $result['name'] ?></p>
                 <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
                 <?= IntelligentSearch::getInfo($result, $this->search->query) ?>
             </article>
