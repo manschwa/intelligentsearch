@@ -27,9 +27,4 @@ class IndexObject_Institute extends IndexObject
 //        $avatar = InstituteAvatar::getAvatar($object['range_id']);
 //        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/institute.png');
     }
-
-    public function getCondition()
-    {
-        // TODO: Implement getCondition() method.
-    }
 }

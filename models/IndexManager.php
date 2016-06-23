@@ -38,10 +38,9 @@ class IndexManager {
                 $type = explode('_', $indexFile);
                 if (!$restriction || stripos(array_pop($type), $restriction) !== false) {
                     $indexClass = basename($indexFile, ".php");
+                    $indexObject = new $indexClass;
                     self::log("Indexing $indexClass");
-                    self::$current_file = $indexClass;
-                    $indexClass::sqlIndex();
-                    self::$current_file = "";
+                    $indexObject->sqlIndex();
                     self::log("Finished $indexClass");
                 }
             }

@@ -13,8 +13,15 @@ abstract class IndexObject
     abstract public function __construct();
     abstract public function sqlIndex();
     abstract public function getLink($object);
-    abstract public function getCondition();
     abstract public function getAvatar();
+
+    /**
+     * @return mixed
+     */
+    public function getCondition()
+    {
+        return null;
+    }
 
     /**
      * @param string $name

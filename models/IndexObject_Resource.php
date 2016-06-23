@@ -25,9 +25,4 @@ class IndexObject_Resource extends IndexObject
     public function getAvatar() {
         return Assets::img('icons/16/black/resources.png');
     }
-
-    public function getCondition()
-    {
-        // TODO: Implement getCondition() method.
-    }
 }

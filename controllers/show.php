@@ -86,14 +86,6 @@ class ShowController extends StudipController
         return PluginEngine::getURL($this->dispatcher->plugin, $params, join('/', $args));
     }
 
-    private function getInfoWidget()
-    {
-        $info_widget = new InfoboxWidget();
-        $info_widget->setTitle(_('Information'));
-        $info_widget->addElement(new InfoboxElement(_('Suchen Sie nach Veranstaltungen, Personen, Dateien, Einrichtungen, Räumen, Forenpostings und Wiki-Einträgen.'), Icon::create('info')));
-        return $info_widget;
-    }
-
     /**
      * Build a LinksWidget for the sidebar to filter out a specific category from your search results.
      * There should only be one category selected at a time.
@@ -120,6 +112,7 @@ class ShowController extends StudipController
 //            if (!method_exists($class, 'belongsTo')) {
             if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type]) {
                 $category_widget->addElement($this->categoryLink($type, $object));
+            }
 //                    foreach ($index_object_types as $sub_category) {
 //                        $sub_class = IntelligentSearch::getClass($sub_category);
 //                        if (method_exists($sub_class, 'belongsTo')) {
@@ -128,7 +121,6 @@ class ShowController extends StudipController
 //                            }
 //                        }
 //                    }
-            }
 //            }
         }
         return $category_widget;

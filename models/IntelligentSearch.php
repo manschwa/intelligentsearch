@@ -196,10 +196,11 @@ class IntelligentSearch extends SearchType {
         }
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             $indexClass = basename($indexFile, ".php");
+            $indexObject = new $indexClass;
             $typename = explode('_', $indexClass);
             $typename = strtolower($typename[1]);
-            if (method_exists($indexClass, 'getCondition')) {
-                $condititions[] = " (search_object.type = '$typename' AND " . $indexClass::getCondition() . ") ";
+            if ($indexObject->getCondition()) {
+                $condititions[] = " (search_object.type = '$typename' AND " . $indexObject->getCondition() . ") ";
             } else {
                 $condititions[] = " (search_object.type = '$typename') ";
             }

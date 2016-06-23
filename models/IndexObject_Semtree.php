@@ -25,9 +25,4 @@ class IndexObject_Semtree extends IndexObject
     public function getAvatar() {
         return Assets::img('icons/16/black/assessment.png');
     }
-
-    public function getCondition()
-    {
-        // TODO: Implement getCondition() method.
-    }
 }
