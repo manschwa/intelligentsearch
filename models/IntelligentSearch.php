@@ -144,14 +144,17 @@ class IntelligentSearch extends SearchType {
         return array_slice($this->results, $page * $this->resultsPerPage, $this->resultsPerPage);
     }
 
-    private function search()
+    public function search($category = null)
     {
         // Timecapture
         $time = microtime(1);
 
-        $statement = $this->getResultSet();
+        if ($category) {
+            $statement = $this->categorySearch($category);
+        } else {
+            $statement = $this->getResultSet();
+        }
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-
             if (!$this->filter || $object['type'] === $this->filter) {
                 $class = self::getClass($object['type']);
                 $obj = new $class;
@@ -162,6 +165,7 @@ class IntelligentSearch extends SearchType {
             $this->resultTypes[$object['type']] ++;
             $this->count++;
         }
+        
 
         $this->time = microtime(1) - $time;
     }
@@ -185,6 +189,14 @@ class IntelligentSearch extends SearchType {
                 . "ORDER BY SUM(MATCH (text) AGAINST (:query IN BOOLEAN MODE) * relevance) DESC"
                 . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
         $statement->bindParam(':query', $search);
+        $statement->execute();
+        return $statement;
+    }
+
+    public function categorySearch($type)
+    {
+        $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object JOIN search_index USING (object_id) WHERE type=:typ GROUP BY object_id LIMIT 30");
+        $statement->bindParam(':typ', $type);
         $statement->execute();
         return $statement;
     }

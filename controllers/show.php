@@ -2,11 +2,11 @@
 
 class ShowController extends StudipController
 {
-
     public function __construct($dispatcher)
     {
         parent::__construct($dispatcher);
         $this->plugin = $dispatcher->plugin;
+        $this->search = new IntelligentSearch();
     }
 
     public function before_filter(&$action, &$args)
@@ -26,8 +26,9 @@ class ShowController extends StudipController
     public function index_action()
     {
         if ($_SESSION['global_search']['query']) {
-            $this->search = new IntelligentSearch();
             $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
+        } elseif (!$_SESSION['global_search']['query'] && $_SESSION['global_search']['category']) {
+            $this->search->search($_SESSION['global_search']['category']);
         }
         $this->addSearchSidebar();
     }
@@ -182,15 +183,6 @@ class ShowController extends StudipController
     public function getCategoryFilter()
     {
         return $_SESSION['global_search']['category'];
-    }
-
-    /**
-     * @param $type string: category
-     * @return array containing all the possible filters for the given category type.
-     */
-    private function getFilters($object)
-    {
-            return IntelligentSearch::getFilterOptions($type);
     }
 
     /**
