@@ -9,7 +9,7 @@ class IndexObject_User extends IndexObject
     public function __construct()
     {
         $this->setName(_('Benutzer'));
-        $this->setFacets(array('Admin', 'Dozent', 'Tutor', 'Autor'));
+        $this->setFacets($this->getFacetFilters());
     }
 
     public function sqlIndex()
@@ -29,6 +29,18 @@ class IndexObject_User extends IndexObject
     public function getCondition()
     {
         return "EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
+    }
+
+    public function getFacetFilters()
+    {
+        $facets = array();
+        $statement = DBManager::get()->prepare("SELECT DISTINCT perms FROM auth_user_md5");
+        $statement->execute();
+        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+            array_push($facets, $object['perms']);
+        }
+        sort($facets);
+        return $facets;
     }
 
     public function getAvatar()

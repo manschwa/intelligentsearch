@@ -119,7 +119,7 @@ class IntelligentSearch extends SearchType {
 		);
 
     public $query;
-    private $filter;
+    private $category_filter;
     public $results = array();
     public $resultTypes = array();
     public $time = 0;
@@ -128,12 +128,12 @@ class IntelligentSearch extends SearchType {
     private $resultsPerPage = 30;
     private $minLength = 4;
 
-    public function query($query, $filter = null)
+    public function query($query, $category_filter = null)
     {
         $this->query = $query;
-        $this->filter = $filter;
+        $this->category_filter = $category_filter;
         if (strlen($query) >= $this->minLength) {
-            $this->search();
+            $this->search($this->category_filter);
         } else {
             $this->error = _('Der eingegebene Suchbegriff ist zu kurz');
         }
@@ -155,7 +155,8 @@ class IntelligentSearch extends SearchType {
             $statement = $this->getResultSet();
         }
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            if (!$this->filter || $object['type'] === $this->filter) {
+            if (!$this->category_filter ||
+                $object['type'] === $this->category_filter && (!$this->getActiveFilters() || $_SESSION['global_search']['facets'][$object['perms']])) {
                 $class = self::getClass($object['type']);
                 $obj = new $class;
                 $object['name'] = $obj->getName();
@@ -165,7 +166,6 @@ class IntelligentSearch extends SearchType {
             $this->resultTypes[$object['type']] ++;
             $this->count++;
         }
-        
 
         $this->time = microtime(1) - $time;
     }
@@ -180,7 +180,6 @@ class IntelligentSearch extends SearchType {
 
         // Stick em together
         $search = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-
         $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
                 . "SELECT object_id,text "
                 . "FROM search_index "
@@ -193,10 +192,43 @@ class IntelligentSearch extends SearchType {
         return $statement;
     }
 
+    /**
+     * @param $type string
+     * @return object statement
+     */
     public function categorySearch($type)
     {
-        $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object JOIN search_index USING (object_id) WHERE type=:typ GROUP BY object_id LIMIT 30");
-        $statement->bindParam(':typ', $type);
+        if ($this->query) {
+            // Find out single words
+            $words = explode(' ', $this->query);
+            // Filter for stopwords
+            $words = self::filterStopwords($words);
+            // Stick em together
+            $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
+            // SQL-search string which is included into the statement below if a query is given
+            $search = "(SELECT object_id,text 
+                FROM search_index 
+                WHERE MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) 
+                GROUP BY object_id 
+                ORDER BY SUM(MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) * relevance) DESC
+                ) as sr";
+        } else {
+            $search = 'search_index';
+        }
+        $this->category_filter = $type;
+        switch ($type) {
+            case 'user':
+                $statement = DBManager::get()->prepare("SELECT search_object.*, text, perms, Institut_id FROM
+                        search_object JOIN " . $search . " USING (object_id)
+                        LEFT JOIN user_inst ON  user_inst.user_id=search_object.range_id
+                        JOIN auth_user_md5 ON auth_user_md5.user_id=search_object.range_id
+                        WHERE type=:type GROUP BY object_id LIMIT 30");
+                break;
+            default:
+                $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object JOIN search_index USING (object_id) WHERE type=:type GROUP BY object_id LIMIT 30");
+                break;
+        }
+        $statement->bindParam(':type', $type);
         $statement->execute();
         return $statement;
     }
@@ -218,6 +250,21 @@ class IntelligentSearch extends SearchType {
             }
         }
         return " WHERE " . join(' OR ', $condititions);
+    }
+
+    /**
+     * Retruns the active filter options for the given category type chosen by the user.
+     * @return array containing only the checked/active filters for the given category.
+     */
+    public function getActiveFilters()
+    {
+        $facets = array();
+        foreach ($_SESSION['global_search']['facets'] as $facet => $value) {
+            if ($_SESSION['global_search']['facets'][$facet]) {
+                array_push($facets, $facet);
+            }
+        }
+        return $facets;
     }
 
     public static function getIndexObjectTypes()
