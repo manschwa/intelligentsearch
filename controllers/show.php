@@ -54,7 +54,7 @@ class ShowController extends StudipController
         $sidebar->addWidget($this->getCategoryWidget());
 
         if ($type = $_SESSION['global_search']['category']) {
-            $class = IntelligentSearch::getClass($type);
+            $class = $this->search->getClass($type);
             $object = new $class;
             $sidebar->addWidget($this->getFacetsWidget($object));
         }
@@ -109,9 +109,9 @@ class ShowController extends StudipController
             $category_widget->addElement($reset_element);
         }
         // list all possible categories as Links
-        $index_object_types = IntelligentSearch::getIndexObjectTypes();
+        $index_object_types = $this->search->getIndexObjectTypes();
         foreach ($index_object_types as $type) {
-            $class = IntelligentSearch::getClass($type);
+            $class = $this->search->getClass($type);
             $object = new $class;
             if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type] || $_SESSION['global_search']['category'] === $type) {
                 $category_widget->addElement($this->categoryLink($type, $object));
@@ -147,7 +147,7 @@ class ShowController extends StudipController
 
         // Select-Filters
         if (method_exists($object, 'getSelectFilters')) {
-            $select_filters = $object->getSelects();
+            $select_filters = $object->getSelectFilters();
             foreach ($select_filters as $name => $selects) {
                 $options_widget->addElement(new WidgetElement($name));
                 $options_widget->addSelect($name,                       // Label

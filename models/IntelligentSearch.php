@@ -217,24 +217,48 @@ class IntelligentSearch extends SearchType {
             $search = 'search_index';
         }
         $this->category_filter = $type;
-        switch ($type) {
-            case 'user':
-                // TODO include getCondition() / visibility of users / rights
-                $statement = DBManager::get()->prepare("SELECT search_object.*, text, perms, Seminar_id, Institut_id FROM
-                        search_object JOIN " . $search . " USING (object_id)
-                        LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
-                        JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
-                        LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id
-                        WHERE type=:type "
-                        . ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? ("AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
-                        . ($_SESSION['global_search']['selects'][_('Vorlesungen')] ? ("AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Vorlesungen')] . "'") : '')
-                        . " GROUP BY object_id" . ($this->query ? "" : " LIMIT 30"));
-                break;
-            default:
-                $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object JOIN search_index USING (object_id) WHERE type=:type GROUP BY object_id LIMIT 30");
-                break;
+
+        if ($type) {
+            $class = $this->getClass($type);
+            $object = new $class;
+            $search_params = $object->getSearchParams();
         }
-        $statement->bindParam(':type', $type);
+//        switch ($type) {
+//            case 'user':
+//                // TODO include getCondition() / visibility of users / rights
+//                $columns = ', perms, Seminar_id, Institut_id ';
+//                $joins = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
+//                          JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
+//                          LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id ';
+//                $conditions = ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
+//                            . ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ');
+//                break;
+//            case 'seminar':
+//                break;
+//            case 'document':
+//                break;
+//            case 'forumentry':
+//                break;
+//            case 'institute':
+//                break;
+//            case 'resource':
+//                break;
+//            case 'semtree':
+//                break;
+//            case 'wiki':
+//                break;
+//            default:
+//                $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object
+//                        JOIN " . $search . " USING (object_id)" . self::buildWhere());
+//                break;
+//        }
+        $statement = DBManager::get()->prepare("SELECT search_object.*, text " . $search_params['columns']
+                . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
+                . " WHERE type = :type " . $search_params['conditions']
+                . " GROUP BY object_id" . ($this->query ? '' : ' LIMIT 30'));
+        if ($type) {
+            $statement->bindParam(':type', $type);
+        }
         $statement->execute();
         return $statement;
     }
@@ -273,7 +297,7 @@ class IntelligentSearch extends SearchType {
         return $facets;
     }
 
-    public static function getIndexObjectTypes()
+    public function getIndexObjectTypes()
     {
         $types = array();
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
@@ -285,7 +309,7 @@ class IntelligentSearch extends SearchType {
         return $types;
     }
 
-    public static function getClass($type)
+    public function getClass($type)
     {
         return "IndexObject_" . ucfirst($type);
     }

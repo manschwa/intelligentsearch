@@ -10,7 +10,7 @@ class IndexObject_User extends IndexObject
     {
         $this->setName(_('Benutzer'));
         $this->setSelects($this->getSelectFilters());
-        $this->setFacets($this->getFacetFilters());
+//        $this->setFacets($this->getFacetFilters());
     }
 
     public function sqlIndex()
@@ -39,9 +39,21 @@ class IndexObject_User extends IndexObject
     {
         $selects = array();
         $selects[_('Einrichtungen')] = $this->getInstitutes();
-        $selects[_('Vorlesungen')] = $this->getSeminars();
+        $selects[_('Veranstaltungen')] = $this->getSeminars();
         ksort($selects);
         return $selects;
+    }
+
+    public function getSearchParams()
+    {
+        $search_params = array();
+        $search_params['columns']   = ', perms, Seminar_id, Institut_id ';
+        $search_params['joins']     = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
+                                        JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
+                                        LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id ';
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ');
+        return $search_params;
     }
 
     /**
@@ -50,12 +62,7 @@ class IndexObject_User extends IndexObject
     public function getInstitutes()
     {
         $institutes = array();
-        if ($GLOBALS['perm']->have_perm('admin')) {
-            $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM Institute");
-        } elseif (isset($GLOBALS['user'])) {
-            $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM user_inst JOIN Institute USING (Institut_id) where user_id=:user_id");
-            $statement->bindParam(':user_id', $GLOBALS['user']->id);
-        }
+        $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM Institute");
         $statement->execute();
 
         $institutes[''] = _('Alle Einrichtungen');
@@ -80,7 +87,7 @@ class IndexObject_User extends IndexObject
         }
         $statement->execute();
 
-        $seminars[''] = _('Alle Vorlesungen');
+        $seminars[''] = _('Alle Veranstaltungen');
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             $seminars[$object['Seminar_id']] = $object['Name'];
         }
@@ -88,17 +95,17 @@ class IndexObject_User extends IndexObject
         return $seminars;
     }
 
-    public function getFacetFilters()
-    {
-        $facets = array();
-        $statement = DBManager::get()->prepare("SELECT DISTINCT perms FROM auth_user_md5");
-        $statement->execute();
-        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            array_push($facets, $object['perms']);
-        }
-        sort($facets);
-        return $facets;
-    }
+//    public function getFacetFilters()
+//    {
+//        $facets = array();
+//        $statement = DBManager::get()->prepare("SELECT DISTINCT perms FROM auth_user_md5");
+//        $statement->execute();
+//        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+//            array_push($facets, $object['perms']);
+//        }
+//        sort($facets);
+//        return $facets;
+//    }
 
     public function getAvatar()
     {

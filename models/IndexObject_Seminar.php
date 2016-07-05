@@ -10,7 +10,7 @@ class IndexObject_Seminar extends IndexObject
 
     public function __construct()
     {
-        $this->setName(_('Vorlesungen'));
+        $this->setName(_('Veranstaltungen'));
         $this->setFacets(array('Semester', 'Einrichtung', 'Studienbereich'));
     }
 
