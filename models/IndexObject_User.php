@@ -9,6 +9,7 @@ class IndexObject_User extends IndexObject
     public function __construct()
     {
         $this->setName(_('Benutzer'));
+        $this->setSelects($this->getSelectFilters());
         $this->setFacets($this->getFacetFilters());
     }
 
@@ -29,6 +30,62 @@ class IndexObject_User extends IndexObject
     public function getCondition()
     {
         return "EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
+    }
+
+    /**
+     * @return array
+     */
+    public function getSelectFilters()
+    {
+        $selects = array();
+        $selects[_('Einrichtungen')] = $this->getInstitutes();
+        $selects[_('Vorlesungen')] = $this->getSeminars();
+        ksort($selects);
+        return $selects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInstitutes()
+    {
+        $institutes = array();
+        if ($GLOBALS['perm']->have_perm('admin')) {
+            $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM Institute");
+        } elseif (isset($GLOBALS['user'])) {
+            $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM user_inst JOIN Institute USING (Institut_id) where user_id=:user_id");
+            $statement->bindParam(':user_id', $GLOBALS['user']->id);
+        }
+        $statement->execute();
+
+        $institutes[''] = _('Alle Einrichtungen');
+        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $institutes[$object['Institut_id']] = $object['Name'];
+        }
+        asort($institutes);
+        return $institutes;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSeminars()
+    {
+        $seminars = array();
+        if ($GLOBALS['perm']->have_perm('admin')) {
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminare");
+        } elseif (isset($GLOBALS['user'])) {
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminar_user JOIN seminare USING (Seminar_id) where user_id=:user_id");
+            $statement->bindParam(':user_id', $GLOBALS['user']->id);
+        }
+        $statement->execute();
+
+        $seminars[''] = _('Alle Vorlesungen');
+        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $seminars[$object['Seminar_id']] = $object['Name'];
+        }
+        asort($seminars);
+        return $seminars;
     }
 
     public function getFacetFilters()

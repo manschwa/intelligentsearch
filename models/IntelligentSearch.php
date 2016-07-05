@@ -156,15 +156,16 @@ class IntelligentSearch extends SearchType {
         }
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             if (!$this->category_filter ||
-                $object['type'] === $this->category_filter && (!$this->getActiveFilters() || $_SESSION['global_search']['facets'][$object['perms']])) {
+                $object['type'] === $this->category_filter &&
+                (!$this->getActiveFilters() || $_SESSION['global_search']['facets'][$object['perms']])) {
                 $class = self::getClass($object['type']);
                 $obj = new $class;
                 $object['name'] = $obj->getName();
                 $object['link'] = $obj->getLink($object);
                 $this->results[] = $object;
+                $this->resultTypes[$object['type']] ++;
+                $this->count++;
             }
-            $this->resultTypes[$object['type']] ++;
-            $this->count++;
         }
 
         $this->time = microtime(1) - $time;
@@ -198,6 +199,7 @@ class IntelligentSearch extends SearchType {
      */
     public function categorySearch($type)
     {
+        // build SQL-search string which is included into the statement below if a query is given
         if ($this->query) {
             // Find out single words
             $words = explode(' ', $this->query);
@@ -205,7 +207,6 @@ class IntelligentSearch extends SearchType {
             $words = self::filterStopwords($words);
             // Stick em together
             $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-            // SQL-search string which is included into the statement below if a query is given
             $search = "(SELECT object_id,text 
                 FROM search_index 
                 WHERE MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) 
@@ -218,11 +219,16 @@ class IntelligentSearch extends SearchType {
         $this->category_filter = $type;
         switch ($type) {
             case 'user':
-                $statement = DBManager::get()->prepare("SELECT search_object.*, text, perms, Institut_id FROM
+                // TODO include getCondition() / visibility of users / rights
+                $statement = DBManager::get()->prepare("SELECT search_object.*, text, perms, Seminar_id, Institut_id FROM
                         search_object JOIN " . $search . " USING (object_id)
-                        LEFT JOIN user_inst ON  user_inst.user_id=search_object.range_id
-                        JOIN auth_user_md5 ON auth_user_md5.user_id=search_object.range_id
-                        WHERE type=:type GROUP BY object_id LIMIT 30");
+                        LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
+                        JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
+                        LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id
+                        WHERE type=:type "
+                        . ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? ("AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
+                        . ($_SESSION['global_search']['selects'][_('Vorlesungen')] ? ("AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Vorlesungen')] . "'") : '')
+                        . " GROUP BY object_id" . ($this->query ? "" : " LIMIT 30"));
                 break;
             default:
                 $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object JOIN search_index USING (object_id) WHERE type=:type GROUP BY object_id LIMIT 30");

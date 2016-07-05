@@ -13,12 +13,13 @@ class ShowController extends StudipController
     {
         $this->set_layout($GLOBALS['template_factory']->open('layouts/base_without_infobox'));
 
-        $_SESSION['global_search']['selected_option'] = Request::option('test_select');
+//        $_SESSION['global_search']['selected_option'] = Request::option('test_select');
         // Find query
         $this->query = Request::get('utf8') ? studip_utf8decode(Request::get('search')) : Request::get('search');
         if ($this->query || Request::submitted('search')) {
             if ($_SESSION['global_search']['query'] !== $this->query) {
-                $this->resetFilter();
+                $this->resetFacetFilters();
+                $this->resetSelectFilters();
             }
             $_SESSION['global_search']['query'] = $this->query;
         }
@@ -26,6 +27,7 @@ class ShowController extends StudipController
 
     public function index_action()
     {
+        //TODO rebuild, so that just the query()-method is used
         if ($_SESSION['global_search']['query']) {
             $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
         } elseif (!$_SESSION['global_search']['query'] && $_SESSION['global_search']['category']) {
@@ -49,8 +51,8 @@ class ShowController extends StudipController
         $sidebar = Sidebar::get();
         $sidebar->setImage('sidebar/search-sidebar.png');
 
-        // add some text
         $sidebar->addWidget($this->getCategoryWidget());
+
         if ($type = $_SESSION['global_search']['category']) {
             $class = IntelligentSearch::getClass($type);
             $object = new $class;
@@ -111,7 +113,7 @@ class ShowController extends StudipController
         foreach ($index_object_types as $type) {
             $class = IntelligentSearch::getClass($type);
             $object = new $class;
-            if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type]) {
+            if (!$_SESSION['global_search']['query'] || $this->search->resultTypes[$type] || $_SESSION['global_search']['category'] === $type) {
                 $category_widget->addElement($this->categoryLink($type, $object));
             }
         }
@@ -135,33 +137,41 @@ class ShowController extends StudipController
      * The filter options shown depend on the chosen category.
      * There can be more than one filter selected per category.
      *
-     * @param $type string
+     * @param $object
      * @return OptionsWidget containing category specific filter options.
      */
     private function getFacetsWidget($object)
     {
         $options_widget = new OptionsWidget;
         $options_widget->setTitle(_('Filtern nach'));
-        $filter_options = $object->getFacets();
 
-        $ary = array('Foo', 'Bar', 'Blub');
-        $options_widget->addElement(new WidgetElement(_('Einrichtungen')));
-        $options_widget->addSelect(_('Einrichtungen'),          // Label
-            $this->url_for('show/index'),                       // URL
-            'test_select',                                      // Name
-            array_merge(['' => _('Alle Einrichtungen')], array_combine($ary, $ary)),    // all options
-            $_SESSION['global_search']['selected_option']);     // selected option
-
-        if ($this->search->getActiveFilters()) {
-            $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_filter'));
-            $options_widget->addElement($reset_element);
+        // Select-Filters
+        if (method_exists($object, 'getSelectFilters')) {
+            $select_filters = $object->getSelects();
+            foreach ($select_filters as $name => $selects) {
+                $options_widget->addElement(new WidgetElement($name));
+                $options_widget->addSelect($name,                       // Label
+                    $this->url_for('show/set_select/' . $name),         // URL
+                    $name,                                              // Name
+                    $selects,                                           // all options
+                    $_SESSION['global_search']['selects'][$name]);      // selected option
+            }
         }
 
-        foreach ($filter_options as $facet) {
-            $options_widget->addCheckbox(ucfirst($facet),
-                $_SESSION['global_search']['facets'][$facet],
-                $this->url_for('show/set_facet/' . $facet . '/' . true),
-                $this->url_for('show/set_facet/' . $facet . '/' . false));
+        // Facet-Filters (checkboxes)
+        if (method_exists($object, 'getFacetFilters')) {
+            if ($this->search->getActiveFilters()) {
+                $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_filter'));
+                $options_widget->addElement($reset_element);
+            }
+
+            $filter_options = $object->getFacets();
+            foreach ($filter_options as $facet) {
+                $options_widget->addCheckbox(ucfirst($facet),                   // Name
+                    $_SESSION['global_search']['facets'][$facet],               // state
+                    $this->url_for('show/set_facet/' . $facet . '/' . true),    // check action
+                    $this->url_for('show/set_facet/' . $facet . '/' . false));  // uncheck action
+            }
         }
         return $options_widget;
     }
@@ -202,6 +212,19 @@ class ShowController extends StudipController
     }
 
     /**
+     * @param null $name
+     * @throws Trails_DoubleRenderError
+     */
+    public function set_select_action($name = null)
+    {
+        // store facet filter in $_SESSION
+        if (!is_null($name)) {
+            $_SESSION['global_search']['selects'][$name] = Request::option($name);
+        }
+        $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
+    }
+
+    /**
      * Set the category (highest level of the search) that should be searched for.
      *
      * @param null $category string: category type
@@ -211,7 +234,7 @@ class ShowController extends StudipController
     {
         // store category filter in $_SESSION
         if (!is_null($category)) {
-            $this->resetFilter();
+            $this->resetFacetFilters();
             $_SESSION['global_search']['category'] = $category;
         }
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
@@ -223,18 +246,24 @@ class ShowController extends StudipController
     }
 
     public function reset_filter_action() {
-        $this->resetFilter();
+        $this->resetFacetFilters();
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
-    private function resetFilter()
+    private function resetSelectFilters()
+    {
+        $_SESSION['global_search']['selects'] = array();
+    }
+
+    private function resetFacetFilters()
     {
         $_SESSION['global_search']['facets'] = array();
     }
 
     private function resetCategoryFilter()
     {
-        $this->resetFilter();
+        $this->resetFacetFilters();
+        $this->resetSelectFilters();
         $_SESSION['global_search']['category'] = null;
     }
 }

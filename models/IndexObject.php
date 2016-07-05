@@ -8,6 +8,7 @@
 abstract class IndexObject
 {
     protected $name;
+    protected $selects;
     protected $facets;
 
     abstract public function __construct();
@@ -34,6 +35,16 @@ abstract class IndexObject
     }
 
     /**
+     * @param mixed $selects
+     */
+    public function setSelects($selects)
+    {
+        if (is_array($selects)) {
+            $this->selects = $selects;
+        }
+    }
+
+    /**
      * @param array $facets
      */
     public function setFacets($facets)
@@ -49,6 +60,14 @@ abstract class IndexObject
     public function getFacets()
     {
         return $this->facets;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSelects()
+    {
+        return $this->selects;
     }
 
     /**
