@@ -28,10 +28,8 @@ class ShowController extends StudipController
     public function index_action()
     {
         //TODO rebuild, so that just the query()-method is used
-        if ($_SESSION['global_search']['query']) {
+        if ($_SESSION['global_search']['query'] || $_SESSION['global_search']['category']) {
             $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
-        } elseif (!$_SESSION['global_search']['query'] && $_SESSION['global_search']['category']) {
-            $this->search->search($_SESSION['global_search']['category']);
         }
         $this->addSearchSidebar();
     }

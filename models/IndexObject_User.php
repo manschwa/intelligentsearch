@@ -29,7 +29,7 @@ class IndexObject_User extends IndexObject
 
     public function getCondition()
     {
-        return "EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
+        return " EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";
     }
 
     /**
@@ -52,7 +52,8 @@ class IndexObject_User extends IndexObject
                                         JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
                                         LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ');
+                                     . ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ')
+                                     . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
     }
 

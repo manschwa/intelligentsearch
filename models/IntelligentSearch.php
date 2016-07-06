@@ -2,122 +2,6 @@
 
 class IntelligentSearch extends SearchType {
 
-    private static $STOPWORDS = array(
-			"ab",  "bei",  "da",  "deshalb",  "ein",  "für",  "finde",  "haben",  "hier",  "ich",  "ja", 
-			"kann",  "machen",  "muesste",  "nach",  "oder",  "seid",  "sonst",  "und",  "vom",  "wann",  "wenn", 
-			"wie",  "zu",  "bin",  "eines",  "hat",  "manche",  "solches",  "an",  "anderm",  "bis",  "das",  "deinem", 
-			"demselben",  "dir",  "doch",  "einig",  "er",  "eurer",  "hatte",  "ihnen",  "ihre",  "ins",  "jenen", 
-			"keinen",  "manchem",  "meinen",  "nichts",  "seine",  "soll",  "unserm",  "welche",  "werden",  "wollte", 
-			"während",  "alle",  "allem",  "allen",  "aller",  "alles",  "als",  "also",  "am",  "ander",  "andere", 
-			"anderem",  "anderen",  "anderer",  "anderes",  "andern",  "anders",  "auch",  "auf",  "aus",  "bist", 
-			"bsp.",  "daher",  "damit",  "dann",  "dasselbe",  "dazu",  "daß",  "dein",  "deine",  "deinen", 
-			"deiner",  "deines",  "dem",  "den",  "denn",  "denselben",  "der",  "derer",  "derselbe", 
-			"derselben",  "des",  "desselben",  "dessen",  "dich",  "die",  "dies",  "diese",  "dieselbe", 
-			"dieselben",  "diesem",  "diesen",  "dieser",  "dieses",  "dort",  "du",  "durch",  "eine",  "einem", 
-			"einen",  "einer",  "einige",  "einigem",  "einigen",  "einiger",  "einiges",  "einmal",  "es",  "etwas", 
-			"euch",  "euer",  "eure",  "eurem",  "euren",  "eures",  "ganz",  "ganze",  "ganzen",  "ganzer", 
-			"ganzes",  "gegen",  "gemacht",  "gesagt",  "gesehen",  "gewesen",  "gewollt",  "hab",  "habe", 
-			"hatten",  "hin",  "hinter",  "ihm",  "ihn",  "ihr",  "ihrem",  "ihren",  "ihrer",  "ihres", 
-			"im",  "in",  "indem",  "ist",  "jede",  "jedem",  "jeden",  "jeder",  "jedes",  "jene",  "jenem", 
-			"jener",  "jenes",  "jetzt",  "kein",  "keine",  "keinem",  "keiner",  "keines",  "konnte",  "könnten", 
-			"können",  "könnte",  "mache",  "machst",  "macht",  "machte",  "machten",  "man",  "manchen",  "mancher", 
-			"manches",  "mein",  "meine",  "meinem",  "meiner",  "meines",  "mich",  "mir",  "mit",  "muss", 
-			"musste",  "müßt",  "nicht",  "noch",  "nun",  "nur",  "ob",  "ohne",  "sage",  "sagen",  "sagt", 
-			"sagte",  "sagten",  "sagtest",  "sehe",  "sehen",  "sehr",  "seht",  "sein",  "seinem",  "seinen", 
-			"seiner",  "seines",  "selbst",  "sich",  "sicher",  "sie",  "sind",  "so",  "solche",  "solchem", 
-			"solchen",  "solcher",  "sollte",  "sondern",  "um",  "uns",  "unse",  "unsen",  "unser",  "unses", 
-			"unter",  "viel",  "von",  "vor",  "war",  "waren",  "warst",  "was",  "weg",  "weil",  "weiter", 
-			"welchem",  "welchen",  "welcher",  "welches",  "welche",  "werde",  "wieder",  "will",  "wir",  "wird", 
-			"wirst",  "wo",  "wolle",  "wollen",  "wollt",  "wollten",  "wolltest",  "wolltet",  "würde",  "würden", 
-			"z.B.",  "zum",  "zur",  "zwar",  "zwischen",  "über",  "aber",  "abgerufen",  "abgerufene", 
-			"abgerufener",  "abgerufenes",  "acht",  "allein",  "allerdings",  "allerlei",  "allgemein", 
-			"allmählich",  "allzu",  "alsbald",  "andererseits",  "andernfalls",  "anerkannt",  "anerkannte", 
-			"anerkannter",  "anerkanntes",  "anfangen",  "anfing",  "angefangen",  "angesetze",  "angesetzt", 
-			"angesetzten",  "angesetzter",  "ansetzen",  "anstatt",  "arbeiten",  "aufgehört",  "aufgrund", 
-			"aufhören",  "aufhörte",  "aufzusuchen",  "ausdrücken",  "ausdrückt",  "ausdrückte",  "ausgenommen", 
-			"ausser",  "ausserdem",  "author",  "autor",  "außen",  "außer",  "außerdem",  "außerhalb",  "bald", 
-			"bearbeite",  "bearbeiten",  "bearbeitete",  "bearbeiteten",  "bedarf",  "bedurfte",  "bedürfen", 
-			"befragen",  "befragte",  "befragten",  "befragter",  "begann",  "beginnen",  "begonnen",  "behalten", 
-			"behielt",  "beide",  "beiden",  "beiderlei",  "beides",  "beim",  "bei",  "beinahe",  "beitragen", 
-			"beitrugen",  "bekannt",  "bekannte",  "bekannter",  "bekennen",  "benutzt",  "bereits",  "berichten", 
-			"berichtet",  "berichtete",  "berichteten",  "besonders",  "besser",  "bestehen",  "besteht", 
-			"beträchtlich",  "bevor",  "bezüglich",  "bietet",  "bisher",  "bislang",  "bis",  "bleiben", 
-			"blieb",  "bloss",  "bloß",  "brachte",  "brachten",  "brauchen",  "braucht",  "bringen",  "bräuchte", 
-			"bzw",  "böden",  "ca.",  "dabei",  "dadurch",  "dafür",  "dagegen",  "dahin",  "damals",  "danach", 
-			"daneben",  "dank",  "danke",  "danken",  "dannen",  "daran",  "darauf",  "daraus",  "darf",  "darfst", 
-			"darin",  "darum",  "darunter",  "darüber",  "darüberhinaus",  "dass",  "davon",  "davor",  "demnach", 
-			"denen",  "dennoch",  "derart",  "derartig",  "derem",  "deren",  "derjenige",  "derjenigen",  "derzeit", 
-			"desto",  "deswegen",  "diejenige",  "diesseits",  "dinge",  "direkt",  "direkte",  "direkten", 
-			"direkter",  "doppelt",  "dorther",  "dorthin",  "drauf",  "drei",  "dreißig",  "drin",  "dritte", 
-			"drunter",  "drüber",  "dunklen",  "durchaus",  "durfte",  "durften",  "dürfen",  "dürfte",  "eben", 
-			"ebenfalls",  "ebenso",  "ehe",  "eher",  "eigenen",  "eigenes",  "eigentlich",  "einbaün", 
-			"einerseits",  "einfach",  "einführen",  "einführte",  "einführten",  "eingesetzt",  "einigermaßen", 
-			"eins",  "einseitig",  "einseitige",  "einseitigen",  "einseitiger",  "einst",  "einstmals",  "einzig", 
-			"ende",  "entsprechend",  "entweder",  "ergänze",  "ergänzen",  "ergänzte",  "ergänzten",  "erhalten", 
-			"erhielt",  "erhielten",  "erhält",  "erneut",  "erst",  "erste",  "ersten",  "erster",  "eröffne", 
-			"eröffnen",  "eröffnet",  "eröffnete",  "eröffnetes",  "etc",  "etliche",  "etwa",  "fall",  "falls", 
-			"fand",  "fast",  "ferner",  "finden",  "findest",  "findet",  "folgende",  "folgenden",  "folgender", 
-			"folgendes",  "folglich",  "fordern",  "fordert",  "forderte",  "forderten",  "fortsetzen",  "fortsetzt", 
-			"fortsetzte",  "fortsetzten",  "fragte",  "frau",  "frei",  "freie",  "freier",  "freies",  "fuer", 
-			"fünf",  "gab",  "ganzem",  "gar",  "gbr",  "geb",  "geben",  "geblieben",  "gebracht",  "gedurft", 
-			"geehrt",  "geehrte",  "geehrten",  "geehrter",  "gefallen",  "gefiel",  "gefälligst",  "gefällt", 
-			"gegeben",  "gehabt",  "gehen",  "geht",  "gekommen",  "gekonnt",  "gemocht",  "gemäss",  "genommen", 
-			"genug",  "gern",  "gestern",  "gestrige",  "getan",  "geteilt",  "geteilte",  "getragen", 
-			"gewissermaßen",  "geworden",  "ggf",  "gib",  "gibt",  "gleich",  "gleichwohl",  "gleichzeitig", 
-			"glücklicherweise",  "gmbh",  "gratulieren",  "gratuliert",  "gratulierte",  "gut",  "gute",  "guten", 
-			"gängig",  "gängige",  "gängigen",  "gängiger",  "gängiges",  "gänzlich",  "haette",  "halb",  "hallo", 
-			"hast",  "hattest",  "hattet",  "heraus",  "herein",  "heute",  "heutige",  "hiermit",  "hiesige", 
-			"hinein",  "hinten",  "hinterher",  "hoch",  "hundert",  "hätt",  "hätte",  "hätten",  "höchstens", 
-			"igitt",  "immer",  "immerhin",  "important",  "indessen",  "info",  "infolge",  "innen",  "innerhalb", 
-			"insofern",  "inzwischen",  "irgend",  "irgendeine",  "irgendwas",  "irgendwen",  "irgendwer", 
-			"irgendwie",  "irgendwo",  "je",  "jedenfalls",  "jederlei",  "jedoch",  "jemand",  "jenseits", 
-			"jährig",  "jährige",  "jährigen",  "jähriges",  "kam",  "kannst",  "kaum",  "keines",  "keinerlei", 
-			"keineswegs",  "klar",  "klare",  "klaren",  "klares",  "klein",  "kleinen",  "kleiner",  "kleines", 
-			"koennen",  "koennt",  "koennte",  "koennten",  "komme",  "kommen",  "kommt",  "konkret",  "konkrete", 
-			"konkreten",  "konkreter",  "konkretes",  "konnten",  "könn",  "könnt",  "könnten",  "künftig",  "lag", 
-			"lagen",  "langsam",  "lassen",  "laut",  "lediglich",  "leer",  "legen",  "legte",  "legten",  "leicht", 
-			"leider",  "lesen",  "letze",  "letzten",  "letztendlich",  "letztens",  "letztes",  "letztlich", 
-			"lichten",  "liegt",  "liest",  "links",  "längst",  "längstens",  "mag",  "magst",  "mal", 
-			"mancherorts",  "manchmal",  "mann",  "margin",  "mehr",  "mehrere",  "meist",  "meiste",  "meisten", 
-			"meta",  "mindestens",  "mithin",  "mochte",  "morgen",  "morgige",  "muessen",  "muesst",  "musst", 
-			"mussten",  "muß",  "mußt",  "möchte",  "möchten",  "möchtest",  "mögen",  "möglich",  "mögliche", 
-			"möglichen",  "möglicher",  "möglicherweise",  "müssen",  "müsste",  "müssten",  "müßte",  "nachdem", 
-			"nacher",  "nachhinein",  "nahm",  "natürlich",  "nacht",  "neben",  "nebenan",  "nehmen",  "nein", 
-			"neu",  "neue",  "neuem",  "neuen",  "neuer",  "neues",  "neun",  "nie",  "niemals",  "niemand", 
-			"nimm",  "nimmer",  "nimmt",  "nirgends",  "nirgendwo",  "nutzen",  "nutzt",  "nutzung",  "nächste", 
-			"nämlich",  "nötigenfalls",  "nützt",  "oben",  "oberhalb",  "obgleich",  "obschon",  "obwohl",  "oft", 
-			"per",  "pfui",  "plötzlich",  "pro",  "reagiere",  "reagieren",  "reagiert",  "reagierte",  "rechts", 
-			"regelmäßig",  "rief",  "rund",  "sang",  "sangen",  "schlechter",  "schließlich",  "schnell",  "schon", 
-			"schreibe",  "schreiben",  "schreibens",  "schreiber",  "schwierig",  "schätzen",  "schätzt", 
-			"schätzte",  "schätzten",  "sechs",  "sect",  "sehrwohl",  "sei",  "seit",  "seitdem",  "seite", 
-			"seiten",  "seither",  "selber",  "senke",  "senken",  "senkt",  "senkte",  "senkten",  "setzen", 
-			"setzt",  "setzte",  "setzten",  "sicherlich",  "sieben",  "siebte",  "siehe",  "sieht",  "singen", 
-			"singt",  "sobald",  "sodaß",  "soeben",  "sofern",  "sofort",  "sog",  "sogar",  "solange",  "solc", 
-			"hen",  "solch",  "sollen",  "sollst",  "sollt",  "sollten",  "solltest",  "somit",  "sonstwo", 
-			"sooft",  "soviel",  "soweit",  "sowie",  "sowohl",  "spielen",  "später",  "startet",  "startete", 
-			"starteten",  "statt",  "stattdessen",  "steht",  "steige",  "steigen",  "steigt",  "stets",  "stieg", 
-			"stiegen",  "such",  "suchen",  "sämtliche",  "tages",  "tat",  "tatsächlich",  "tatsächlichen", 
-			"tatsächlicher",  "tatsächliches",  "tausend",  "teile",  "teilen",  "teilte",  "teilten",  "titel", 
-			"total",  "trage",  "tragen",  "trotzdem",  "trug",  "trägt",  "toll",  "tun",  "tust",  "tut",  "txt", 
-			"tät",  "ueber",  "umso",  "unbedingt",  "ungefähr",  "unmöglich",  "unmögliche",  "unmöglichen", 
-			"unmöglicher",  "unnötig",  "unsem",  "unser",  "unsere",  "unserem",  "unseren",  "unserer", 
-			"unseres",  "unten",  "unterbrach",  "unterbrechen",  "unterhalb",  "unwichtig",  "usw",  "vergangen", 
-			"vergangene",  "vergangener",  "vergangenes",  "vermag",  "vermutlich",  "vermögen",  "verrate", 
-			"verraten",  "verriet",  "verrieten",  "version",  "versorge",  "versorgen",  "versorgt",  "versorgte", 
-			"versorgten",  "versorgtes",  "veröffentlichen",  "veröffentlicher",  "veröffentlicht", 
-			"veröffentlichte",  "veröffentlichten",  "veröffentlichtes",  "viele",  "vielen",  "vieler",  "vieles", 
-			"vielleicht",  "vielmals",  "vier",  "vollständig",  "voran",  "vorbei",  "vorgestern",  "vorher", 
-			"vorne",  "vorüber",  "völlig",  "während",  "wachen",  "waere",  "warum",  "weder",  "wegen", 
-			"weitere",  "weiterem",  "weiteren",  "weiterer",  "weiteres",  "weiterhin",  "weiß",  "wem",  "wen", 
-			"wenig",  "wenige",  "weniger",  "wenigstens",  "wenngleich",  "wer",  "werdet",  "weshalb",  "wessen", 
-			"weswegen",  "wichtig",  "wieso",  "wieviel",  "wiewohl",  "willst",  "wirklich",  "wodurch",  "wogegen", 
-			"woher",  "wohin",  "wohingegen",  "wohl",  "wohlweislich",  "womit",  "woraufhin",  "woraus",  "worin", 
-			"wurde",  "wurden",  "währenddessen",  "wär",  "wäre",  "wären",  "zahlreich",  "zehn",  "zeitweise", 
-			"ziehen",  "zieht",  "zog",  "zogen",  "zudem",  "zuerst",  "zufolge",  "zugleich",  "zuletzt",  "zumal", 
-			"zurück",  "zusammen",  "zuviel",  "zwanzig",  "zwei",  "zwölf",  "ähnlich", 
-			"übel",  "überall",  "überallhin",  "überdies",  "übermorgen",  "übrig",  "übrigens"
-		);
-
     public $query;
     private $category_filter;
     public $results = array();
@@ -127,12 +11,13 @@ class IntelligentSearch extends SearchType {
     public $error;
     private $resultsPerPage = 30;
     private $minLength = 4;
+    private $limit = 30;
 
     public function query($query, $category_filter = null)
     {
         $this->query = $query;
         $this->category_filter = $category_filter;
-        if (strlen($query) >= $this->minLength) {
+        if (($this->query && strlen($query) >= $this->minLength) || $this->category_filter) {
             $this->search($this->category_filter);
         } else {
             $this->error = _('Der eingegebene Suchbegriff ist zu kurz');
@@ -149,15 +34,12 @@ class IntelligentSearch extends SearchType {
         // Timecapture
         $time = microtime(1);
 
-        if ($category) {
-            $statement = $this->categorySearch($category);
-        } else {
-            $statement = $this->getResultSet();
-        }
+        $statement = $this->getResultSet($category);
+
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             if (!$this->category_filter ||
                 $object['type'] === $this->category_filter &&
-                (!$this->getActiveFilters() || $_SESSION['global_search']['facets'][$object['perms']])) {
+                !$this->getActiveFilters()) {
                 $class = self::getClass($object['type']);
                 $obj = new $class;
                 $object['name'] = $obj->getName();
@@ -171,33 +53,13 @@ class IntelligentSearch extends SearchType {
         $this->time = microtime(1) - $time;
     }
 
-    private function getResultSet($limit = null)
-    {
-        // Find out single words
-        $words = explode(' ', $this->query);
-
-        // Filter for stopwords
-        $words = self::filterStopwords($words);
-
-        // Stick em together
-        $search = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-        $statement = DBManager::get()->prepare("SELECT search_object.*,text FROM ("
-                . "SELECT object_id,text "
-                . "FROM search_index "
-                . "WHERE MATCH (text) AGAINST (:query IN BOOLEAN MODE) "
-                . "GROUP BY object_id "
-                . "ORDER BY SUM(MATCH (text) AGAINST (:query IN BOOLEAN MODE) * relevance) DESC"
-                . ") as sr JOIN search_object USING (object_id)" . self::buildWhere() . ($limit ? " LIMIT $limit" : ""));
-        $statement->bindParam(':query', $search);
-        $statement->execute();
-        return $statement;
-    }
-
     /**
-     * @param $type string
-     * @return object statement
+     * Method to build the SQL-query string and return the result set from the DB.
+     *
+     * @param $type string relevant if a category type is given for the search
+     * @return object statement result set of the search
      */
-    public function categorySearch($type)
+    public function getResultSet($type)
     {
         // build SQL-search string which is included into the statement below if a query is given
         if ($this->query) {
@@ -207,55 +69,26 @@ class IntelligentSearch extends SearchType {
             $words = self::filterStopwords($words);
             // Stick em together
             $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-            $search = "(SELECT object_id,text 
-                FROM search_index 
-                WHERE MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) 
-                GROUP BY object_id 
-                ORDER BY SUM(MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) * relevance) DESC
-                ) as sr";
+            $search = "(SELECT object_id, text FROM search_index"
+                . " WHERE MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE)"
+                . " GROUP BY object_id"
+                . " ORDER BY SUM(MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) * relevance) DESC"
+                . ") as sr";
         } else {
             $search = 'search_index';
         }
-        $this->category_filter = $type;
 
         if ($type) {
             $class = $this->getClass($type);
             $object = new $class;
             $search_params = $object->getSearchParams();
         }
-//        switch ($type) {
-//            case 'user':
-//                // TODO include getCondition() / visibility of users / rights
-//                $columns = ', perms, Seminar_id, Institut_id ';
-//                $joins = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
-//                          JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
-//                          LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id ';
-//                $conditions = ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
-//                            . ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ');
-//                break;
-//            case 'seminar':
-//                break;
-//            case 'document':
-//                break;
-//            case 'forumentry':
-//                break;
-//            case 'institute':
-//                break;
-//            case 'resource':
-//                break;
-//            case 'semtree':
-//                break;
-//            case 'wiki':
-//                break;
-//            default:
-//                $statement = DBManager::get()->prepare("SELECT search_object.*, text FROM search_object
-//                        JOIN " . $search . " USING (object_id)" . self::buildWhere());
-//                break;
-//        }
+        // TODO include getCondition() in ALL IndexObjects
         $statement = DBManager::get()->prepare("SELECT search_object.*, text " . $search_params['columns']
                 . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
-                . " WHERE type = :type " . $search_params['conditions']
-                . " GROUP BY object_id" . ($this->query ? '' : ' LIMIT 30'));
+                . " WHERE " . ($type ? (' type = :type' . $search_params['conditions']) : '')
+                . (!$type && $this->query ? $this->buildWhere() : ' ') . (!$this->query ? " GROUP BY object_id " : '')
+                . ($this->query ? '' : " LIMIT $this->limit"));
         if ($type) {
             $statement->bindParam(':type', $type);
         }
@@ -263,10 +96,10 @@ class IntelligentSearch extends SearchType {
         return $statement;
     }
 
-    public static function buildWhere()
+    public function buildWhere()
     {
         if ($GLOBALS['perm']->have_perm('root')) {
-            return "";
+            return 1;
         }
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             $indexClass = basename($indexFile, ".php");
@@ -274,16 +107,18 @@ class IntelligentSearch extends SearchType {
             $typename = explode('_', $indexClass);
             $typename = strtolower($typename[1]);
             if ($indexObject->getCondition()) {
+                //TODO delete the 'AND' here and add it in the IndexObjects
                 $condititions[] = " (search_object.type = '$typename' AND " . $indexObject->getCondition() . ") ";
             } else {
                 $condititions[] = " (search_object.type = '$typename') ";
             }
         }
-        return " WHERE " . join(' OR ', $condititions);
+        return join(' OR ', $condititions);
     }
 
     /**
      * Retruns the active filter options for the given category type chosen by the user.
+     *
      * @return array containing only the checked/active filters for the given category.
      */
     public function getActiveFilters()
@@ -381,7 +216,7 @@ class IntelligentSearch extends SearchType {
     {
         $new = $input;
         foreach ($input as $key => $test) {
-            if (in_array($test, self::$STOPWORDS)) {
+            if (in_array($test, StopWords::getStopWords())) {
                 unset($new[$key]);
                 continue;
             }
