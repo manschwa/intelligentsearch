@@ -13,13 +13,11 @@ class ShowController extends StudipController
     {
         $this->set_layout($GLOBALS['template_factory']->open('layouts/base_without_infobox'));
 
-//        $_SESSION['global_search']['selected_option'] = Request::option('test_select');
         // Find query
         $this->query = Request::get('utf8') ? studip_utf8decode(Request::get('search')) : Request::get('search');
         if ($this->query || Request::submitted('search')) {
             if ($_SESSION['global_search']['query'] !== $this->query) {
                 $this->resetFacetFilters();
-                $this->resetSelectFilters();
             }
             $_SESSION['global_search']['query'] = $this->query;
         }
@@ -27,10 +25,6 @@ class ShowController extends StudipController
 
     public function index_action()
     {
-        //TODO rebuild, so that just the query()-method is used
-        if ($_SESSION['global_search']['query'] || $_SESSION['global_search']['category']) {
-            $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
-        }
         $this->addSearchSidebar();
     }
 
@@ -41,6 +35,13 @@ class ShowController extends StudipController
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
     }
 
+    public function open_action($id) {
+        $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
+        $stmt->execute(array($id));
+        $location = $GLOBALS['ABSOLUTE_URI_STUDIP'].IntelligentSearch::getLink($stmt->fetch(PDO::FETCH_ASSOC));
+        header("location: $location");die;
+    }
+
     /**
      *
      */
@@ -49,12 +50,23 @@ class ShowController extends StudipController
         $sidebar = Sidebar::get();
         $sidebar->setImage('sidebar/search-sidebar.png');
 
-        $sidebar->addWidget($this->getCategoryWidget());
+        //TODO don't call getCategoryWidget() twice...
+        $this->getCategoryWidget();
 
         if ($type = $_SESSION['global_search']['category']) {
             $class = $this->search->getClass($type);
             $object = new $class;
-            $sidebar->addWidget($this->getFacetsWidget($object));
+            $facets_widget = $this->getFacetsWidget($object);
+        }
+
+        if ($_SESSION['global_search']['query'] || $_SESSION['global_search']['category']) {
+            $this->search->query($_SESSION['global_search']['query'], $this->getCategoryFilter());
+        }
+
+        $category_widget = $this->getCategoryWidget();
+        $sidebar->addWidget($category_widget);
+        if ($facets_widget) {
+            $sidebar->addWidget($facets_widget);
         }
 
         // Root may update index
@@ -68,24 +80,6 @@ class ShowController extends StudipController
         if (Studip\ENV == 'development' && $this->search->time && $GLOBALS['perm']->have_perm('admin')) {
             $sidebar->addWidget($this->getRuntimeWidget());
         }
-    }
-
-    // customized #url_for for plugins
-    function url_for($to)
-    {
-        $args = func_get_args();
-
-        # find params
-        $params = array();
-        if (is_array(end($args))) {
-            $params = array_pop($args);
-        }
-
-        # urlencode all but the first argument
-        $args = array_map('urlencode', $args);
-        $args[0] = $to;
-
-        return PluginEngine::getURL($this->dispatcher->plugin, $params, join('/', $args));
     }
 
     /**
@@ -147,15 +141,16 @@ class ShowController extends StudipController
         if (method_exists($object, 'getSelectFilters')) {
             $select_filters = $object->getSelectFilters();
             foreach ($select_filters as $name => $selects) {
+                $selected = $_SESSION['global_search']['selects'][$name];
                 $options_widget->addElement(new WidgetElement($name));
                 $options_widget->addSelect($name,                       // Label
                     $this->url_for('show/set_select/' . $name),         // URL
                     $name,                                              // Name
                     $selects,                                           // all options
-                    $_SESSION['global_search']['selects'][$name]);      // selected option
+                    // need to do this because of implicit type conversion (string to int in associative array)
+                    preg_match('/^[1-9][0-9]*$/', $selected) ? (int)$selected : $selected);      // selected option
             }
         }
-
         // Facet-Filters (checkboxes)
         if (method_exists($object, 'getFacetFilters')) {
             if ($this->search->getActiveFilters()) {
@@ -233,6 +228,7 @@ class ShowController extends StudipController
         // store category filter in $_SESSION
         if (!is_null($category)) {
             $this->resetFacetFilters();
+            $this->resetSelectFilters();
             $_SESSION['global_search']['category'] = $category;
         }
         $this->redirect($this->url_for('show/index?search=' . $_SESSION['global_search']['query']));
@@ -263,5 +259,23 @@ class ShowController extends StudipController
         $this->resetFacetFilters();
         $this->resetSelectFilters();
         $_SESSION['global_search']['category'] = null;
+    }
+
+    // customized #url_for for plugins
+    function url_for($to = '')
+    {
+        $args = func_get_args();
+
+        # find params
+        $params = array();
+        if (is_array(end($args))) {
+            $params = array_pop($args);
+        }
+
+        # urlencode all but the first argument
+        $args = array_map('urlencode', $args);
+        $args[0] = $to;
+
+        return PluginEngine::getURL($this->dispatcher->plugin, $params, join('/', $args));
     }
 }

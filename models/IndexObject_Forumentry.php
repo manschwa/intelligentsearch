@@ -23,6 +23,52 @@ class IndexObject_Forumentry extends IndexObject
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', vorname, nachname, username), " . IndexManager::relevance(self::RATING_FORUMAUTHOR, 'forum_entries.chdate') . " FROM forum_entries JOIN auth_user_md5 USING (user_id) " . IndexManager::createJoin('topic_id'));
     }
 
+    /**
+     * @return array
+     */
+    public function getSelectFilters()
+    {
+        $selects = array();
+        $selects[_('Veranstaltungen')] = $this->getSeminars();
+        ksort($selects);
+        return $selects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSearchParams()
+    {
+        $search_params = array();
+        $search_params['columns']   = ', forum_entries.seminar_id, forum_entries.user_id ';
+        $search_params['joins']     = ' LEFT JOIN forum_entries ON forum_entries.topic_id = search_object.range_id ';
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ')
+            . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
+        return $search_params;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSeminars()
+    {
+        $seminars = array();
+        if ($GLOBALS['perm']->have_perm('admin')) {
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminare LIMIT 30"); //OBACHT im Livesystem, zu viele Veranstaltungen
+        } elseif (isset($GLOBALS['user'])) {
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminar_user JOIN seminare USING (Seminar_id) where user_id=:user_id");
+            $statement->bindParam(':user_id', $GLOBALS['user']->id);
+        }
+        $statement->execute();
+
+        $seminars[''] = _('Alle Veranstaltungen');
+        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $seminars[$object['Seminar_id']] = $object['Name'];
+        }
+        ksort($seminars);
+        return $seminars;
+    }
+
     public function getLink($object)
     {
         return "plugins.php/coreforum/index/index/{$object['range_id']}?cid={$object['range2']}";

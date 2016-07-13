@@ -11,7 +11,7 @@ class IndexObject_Seminar extends IndexObject
     public function __construct()
     {
         $this->setName(_('Veranstaltungen'));
-        $this->setFacets(array('Semester', 'Einrichtung', 'Studienbereich'));
+//        $this->setFacets(array('Semester', 'Einrichtung', 'Studienbereich'));
     }
 
     public function sqlIndex() {
@@ -34,12 +34,104 @@ class IndexObject_Seminar extends IndexObject
         IndexManager::log("Indexed lecturers");
     }
 
-    public function getCondition() {
-        return "EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = range_id AND visible = 1) OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range_id AND user_id = '{$GLOBALS['user']->id}')";
-    }
-
     public function getLink($object) {
         return "details.php?sem_id={$object['range_id']}";
+    }
+
+    public function getCondition() {
+        return " EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = range_id AND visible = 1) OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range_id AND user_id = '{$GLOBALS['user']->id}')";
+    }
+
+    /**
+     * @return array
+     */
+    public function getSearchParams()
+    {
+        $search_params = array();
+        $search_params['columns']   = ', start_time, seminar_inst.institut_id ';
+        $search_params['joins']     = ' JOIN seminare ON seminare.Seminar_id = search_object.range_id '
+                                    . ' LEFT JOIN seminar_inst ON  seminar_inst.seminar_id = search_object.range_id ';
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Semester')] ? (" AND start_time ='" . $_SESSION['global_search']['selects'][_('Semester')] . "' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND seminar_inst.institut_id IN ('" . $this->getInstituteArray() . "') ") : ' ')
+                                     . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
+        return $search_params;
+    }
+
+    /**
+     * @return string
+     */
+    private function getInstituteArray()
+    {
+        $institutes = Institute::findByFaculty($_SESSION['global_search']['selects']['Einrichtungen']);
+        if ($institutes) {
+            $var = implode('\', \'', array_column($institutes, 'Institut_id'));
+            // append the parent institute itself
+            return $var . '\', \'' . $_SESSION['global_search']['selects']['Einrichtungen'];
+        } else {
+            return $_SESSION['global_search']['selects']['Einrichtungen'];
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getSelectFilters()
+    {
+        $selects = array();
+        $selects[_('Semester')] = $this->getSemesters();
+        $selects[_('Einrichtungen')] = $this->getInstitutes();
+        return $selects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSemesters()
+    {
+        // set current semester as selected
+        if (!$_SESSION['global_search']['selects']) {
+            $sem = Semester::findCurrent();
+            $_SESSION['global_search']['selects']['Semester'] = $sem['beginn'];
+        }
+
+        $semesters = array();
+        $sems = array_reverse(Semester::getAll());
+        $semesters[' '] = _('Alle Semester');
+        foreach ($sems as $semester) {
+            $semesters[$semester['beginn']] = $semester['name'];
+        }
+        return $semesters;
+    }
+
+    /**
+     * @return array
+     */
+    public function getInstitutes()
+    {
+        $institutes = array();
+        $insts = Institute::getInstitutes();
+        $institutes[''] = _('Alle Einrichtungen');
+        foreach ($insts as $institute) {
+            $institutes[$institute['Institut_id']] = ($institute['is_fak'] ? '' : '  ') . $institute['Name'];
+        }
+        return $institutes;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSemtree()
+    {
+        $institutes = array();
+        $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM Institute");
+        $statement->execute();
+
+        $institutes[''] = _('Alle Einrichtungen');
+        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $institutes[$object['Institut_id']] = $object['Name'];
+        }
+        krsort($institutes);
+        return $institutes;
     }
 
     public function getAvatar() {

@@ -51,10 +51,24 @@ class IndexObject_User extends IndexObject
         $search_params['joins']     = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
                                         JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
                                         LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id ';
-        $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND Institut_id ='" . $_SESSION['global_search']['selects'][_('Einrichtungen')] . "' AND inst_perms != 'user' ") : ' ')
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Einrichtungen')] ? (" AND Institut_id IN ('" . $this->getInstituteArray() . "') AND inst_perms != 'user' ") : ' ')
                                      . ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
+    }
+
+    /**
+     * @return string
+     */
+    private function getInstituteArray()
+    {
+        $institutes = Institute::findByFaculty($_SESSION['global_search']['selects']['Einrichtungen']);
+        if ($institutes) {
+            $var = implode('\', \'', array_column($institutes, 'Institut_id'));
+            return $var;
+        } else {
+            return $_SESSION['global_search']['selects']['Einrichtungen'];
+        }
     }
 
     /**
@@ -63,14 +77,11 @@ class IndexObject_User extends IndexObject
     public function getInstitutes()
     {
         $institutes = array();
-        $statement = DBManager::get()->prepare("SELECT Institut_id, Name FROM Institute");
-        $statement->execute();
-
+        $insts = Institute::getInstitutes();
         $institutes[''] = _('Alle Einrichtungen');
-        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $institutes[$object['Institut_id']] = $object['Name'];
+        foreach ($insts as $institute) {
+                $institutes[$institute['Institut_id']] = ($institute['is_fak'] ? '' : '  ') . $institute['Name'];
         }
-        asort($institutes);
         return $institutes;
     }
 
@@ -81,7 +92,7 @@ class IndexObject_User extends IndexObject
     {
         $seminars = array();
         if ($GLOBALS['perm']->have_perm('admin')) {
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminare");
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminare LIMIT 30"); //OBACHT im Livesystem, zu viele Veranstaltungen
         } elseif (isset($GLOBALS['user'])) {
             $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminar_user JOIN seminare USING (Seminar_id) where user_id=:user_id");
             $statement->bindParam(':user_id', $GLOBALS['user']->id);
@@ -92,7 +103,7 @@ class IndexObject_User extends IndexObject
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             $seminars[$object['Seminar_id']] = $object['Name'];
         }
-        asort($seminars);
+        ksort($seminars);
         return $seminars;
     }
 

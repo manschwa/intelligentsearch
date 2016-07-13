@@ -81,13 +81,15 @@ class IntelligentSearch extends SearchType {
         if ($type) {
             $class = $this->getClass($type);
             $object = new $class;
-            $search_params = $object->getSearchParams();
+            if (method_exists($object, 'getSearchParams')) {
+                $search_params = $object->getSearchParams();
+            }
         }
         // TODO include getCondition() in ALL IndexObjects
         $statement = DBManager::get()->prepare("SELECT search_object.*, text " . $search_params['columns']
                 . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
                 . " WHERE " . ($type ? (' type = :type' . $search_params['conditions']) : '')
-                . (!$type && $this->query ? $this->buildWhere() : ' ') . (!$this->query ? " GROUP BY object_id " : '')
+                . (!$type && $this->query ? $this->buildWhere() : ' ') . " GROUP BY object_id "
                 . ($this->query ? '' : " LIMIT $this->limit"));
         if ($type) {
             $statement->bindParam(':type', $type);
