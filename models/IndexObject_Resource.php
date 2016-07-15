@@ -9,7 +9,6 @@ class IndexObject_Resource extends IndexObject
     public function __construct()
     {
         $this->setName(_('Ressourcen'));
-        $this->setFacets(array('Räume', 'Andere'));
     }
 
     public function sqlIndex() {

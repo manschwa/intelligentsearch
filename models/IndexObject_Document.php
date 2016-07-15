@@ -6,12 +6,11 @@ class IndexObject_Document extends IndexObject
     const RATING_DOCUMENT_TITLE = 0.9;
     const RATING_DOCUMENT_DESCRIPTION = 0.8;
 
-    const BELONGS_TO = array('seminar', 'institute');
-
     public function __construct()
     {
         $this->setName(_('Dokumente'));
-        $this->setFacets(array('Long', 'Short', 'PDF', 'TXT'));
+        $this->setSelects($this->getSelectFilters());
+        $this->setFacets($this->getFacetFilters());
     }
 
     public function sqlIndex()
@@ -36,12 +35,44 @@ class IndexObject_Document extends IndexObject
         return Assets::img('icons/16/black/file.png');
     }
 
-    /**
-     * @param $type string
-     * @return bool
-     */
-    public static function belongsTo($type)
+    public function getSearchParams()
     {
-        return in_array($type, self::BELONGS_TO);
+        $search_params = array();
+        $search_params['columns']   = ', dokumente.filename ';
+        $search_params['joins']     = ' LEFT JOIN dokumente ON  dokumente.dokument_id = search_object.range_id
+                                        LEFT JOIN seminare ON dokumente.seminar_id = seminare.Seminar_id ';
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND Institut_id IN ('" . $this->getInstituteArray() . "') AND inst_perms != 'user' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND seminare.Seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
+                                     . ($this->getActiveFacets() ? (" AND UPPER(SUBSTRING(dokumente.filename, -3)) IN ('" . $this->getActiveFacets() . "') ") : ' ')
+                                     . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
+        return $search_params;
+    }
+
+    /**
+     * @return array
+     */
+    public function getSelectFilters()
+    {
+        $selects = array();
+        $selects[$this->getSelectName('seminar')] = $this->getSeminars();
+        ksort($selects);
+        return $selects;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFacetFilters()
+    {
+        $facets = array();
+        $statement = DBManager::get()->prepare("SELECT UPPER(SUBSTRING(filename, -3)) AS filetype FROM dokumente");
+        $statement->execute();
+        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $filename = $object['filename'];
+            array_push($facets, $object['filetype']);
+        }
+        array_unique($facets);
+        sort($facets);
+        return $facets;
     }
 }

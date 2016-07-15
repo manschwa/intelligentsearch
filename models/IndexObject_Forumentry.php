@@ -12,7 +12,7 @@ class IndexObject_Forumentry extends IndexObject
     public function __construct()
     {
         $this->setName(_('Forumeinträge'));
-        $this->setFacets(array('Foo', 'Bar', 'Foobar'));
+        $this->setSelects($this->getSelectFilters());
     }
 
     public function sqlIndex()

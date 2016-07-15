@@ -8,7 +8,6 @@ class IndexObject_Institute extends IndexObject
     public function __construct()
     {
         $this->setName(_('Einrichtungen'));
-        $this->setFacets(array('Uni', 'FH'));
     }
 
     public function sqlIndex()

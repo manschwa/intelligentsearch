@@ -139,7 +139,7 @@ class ShowController extends StudipController
 
         // Select-Filters
         if (method_exists($object, 'getSelectFilters')) {
-            $select_filters = $object->getSelectFilters();
+            $select_filters = $object->getSelects();
             foreach ($select_filters as $name => $selects) {
                 $selected = $_SESSION['global_search']['selects'][$name];
                 $options_widget->addElement(new WidgetElement($name));
@@ -160,7 +160,7 @@ class ShowController extends StudipController
 
             $filter_options = $object->getFacets();
             foreach ($filter_options as $facet) {
-                $options_widget->addCheckbox(ucfirst($facet),                   // Name
+                $options_widget->addCheckbox($facet,                            // Name
                     $_SESSION['global_search']['facets'][$facet],               // state
                     $this->url_for('show/set_facet/' . $facet . '/' . true),    // check action
                     $this->url_for('show/set_facet/' . $facet . '/' . false));  // uncheck action

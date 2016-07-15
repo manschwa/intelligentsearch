@@ -37,9 +37,7 @@ class IntelligentSearch extends SearchType {
         $statement = $this->getResultSet($category);
 
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            if (!$this->category_filter ||
-                $object['type'] === $this->category_filter &&
-                !$this->getActiveFilters()) {
+            if (!$this->category_filter || $object['type'] === $this->category_filter) {
                 $class = self::getClass($object['type']);
                 $obj = new $class;
                 $object['name'] = $obj->getName();
@@ -85,7 +83,6 @@ class IntelligentSearch extends SearchType {
                 $search_params = $object->getSearchParams();
             }
         }
-        // TODO include getCondition() in ALL IndexObjects
         $statement = DBManager::get()->prepare("SELECT search_object.*, text " . $search_params['columns']
                 . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
                 . " WHERE " . ($type ? (' type = :type' . $search_params['conditions']) : '')
