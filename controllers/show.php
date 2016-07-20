@@ -15,7 +15,7 @@ class ShowController extends StudipController
 
         // Find query
         $this->query = Request::get('utf8') ? studip_utf8decode(Request::get('search')) : Request::get('search');
-        if ($this->query || Request::submitted('search')) {
+        if ($this->query || Request::submitted('search') || Request::submitted('Suchen')) {
             if ($_SESSION['global_search']['query'] !== $this->query) {
                 $this->resetFacetFilters();
             }

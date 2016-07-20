@@ -56,6 +56,10 @@ abstract class IndexObject
         while ($seminar = $statement->fetch(PDO::FETCH_ASSOC)) {
             $seminars[$seminar['Seminar_id']] = $seminar['Name'] . ' (' . $seminar['name'] . ')';
         }
+        // clear the seminar filter if the semester filter changes and the seminar does not exist in the chosen semester
+        if (!array_key_exists($_SESSION['global_search']['selects'][$this->getSelectName('seminar')], $seminars)) {
+            $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] = '';
+        }
         asort($seminars);
         return $seminars;
     }

@@ -29,6 +29,7 @@ class IndexObject_Forumentry extends IndexObject
         $selects = array();
         $selects[$this->getSelectName('semester')] = $this->getSemesters();
         $selects[$this->getSelectName('seminar')] = $this->getSeminars();
+//        $selects[$this->getSelectName('user')] = $this->getUsers();
         return $selects;
     }
 
