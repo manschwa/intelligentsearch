@@ -10,7 +10,7 @@ class IndexObject_User extends IndexObject
     {
         $this->setName(_('Benutzer'));
         $this->setSelects($this->getSelectFilters());
-        $this->setFacets($this->getFacetFilters());
+//        $this->setFacets($this->getFacetFilters());
     }
 
     public function sqlIndex()
@@ -39,8 +39,6 @@ class IndexObject_User extends IndexObject
     {
         $selects = array();
         $selects[$this->getSelectName('institute')] = $this->getInstitutes();
-        $selects[$this->getSelectName('seminar')] = $this->getSeminars();
-        ksort($selects);
         return $selects;
     }
 
@@ -50,27 +48,11 @@ class IndexObject_User extends IndexObject
     public function getSearchParams()
     {
         $search_params = array();
-        $search_params['columns']   = ', perms, Seminar_id, Institut_id ';
-        $search_params['joins']     = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id
-                                        JOIN auth_user_md5 ON auth_user_md5.user_id = search_object.range_id
-                                        LEFT JOIN seminar_user ON seminar_user.user_id = search_object.range_id ';
+        $search_params['columns']   = ', Institut_id ';
+        $search_params['joins']     = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND Institut_id IN ('" . $this->getInstituteArray() . "') AND inst_perms != 'user' ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
-                                     . ($this->getActiveFacets() ? (" AND perms IN ('" . $this->getActiveFacets() . "') ") : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
-    }
-
-    public function getFacetFilters()
-    {
-        $facets = array();
-        $statement = DBManager::get()->prepare("SELECT DISTINCT perms FROM auth_user_md5");
-        $statement->execute();
-        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            array_push($facets, $object['perms']);
-        }
-        sort($facets);
-        return $facets;
     }
 
     public function getAvatar()

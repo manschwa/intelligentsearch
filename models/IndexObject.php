@@ -30,6 +30,8 @@ abstract class IndexObject
                 return _('Einrichtungen');
             case 'sem_class':
                 return _('Veranstaltungsarten');
+            case 'file_type':
+                return _('Dateitypen');
             default:
                 return '';
         }
@@ -43,18 +45,18 @@ abstract class IndexObject
         $seminars = array();
         if ($GLOBALS['perm']->have_perm('admin')) {
             //OBACHT im Livesystem, zu viele Veranstaltungen
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminare LIMIT 30");
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminare JOIN semester_data ON seminare.start_time = semester_data.beginn " . $this->getSeminarsForSemester() . "  LIMIT 30");
         } elseif (isset($GLOBALS['user'])) {
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminar_user JOIN seminare USING (Seminar_id) where user_id=:user_id");
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminar_user JOIN seminare USING (Seminar_id) JOIN semester_data ON seminare.start_time = semester_data.beginn WHERE user_id=:user_id");
             $statement->bindParam(':user_id', $GLOBALS['user']->id);
         }
         $statement->execute();
 
         $seminars[''] = _('Alle Veranstaltungen');
-        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $seminars[$object['Seminar_id']] = $object['Name'];
+        while ($seminar = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $seminars[$seminar['Seminar_id']] = $seminar['Name'] . ' (' . $seminar['name'] . ')';
         }
-        ksort($seminars);
+        asort($seminars);
         return $seminars;
     }
 
@@ -98,13 +100,13 @@ abstract class IndexObject
     protected function getSemClasses()
     {
         $sem_classes = array();
-        $statement = DBManager::get()->prepare("SELECT id, name FROM sem_classes");
-        $statement->execute();
         $sem_classes[''] = _('Alle Veranstaltungsarten');
-        while ($sem_class = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $sem_classes[$sem_class['id']] = $sem_class['name'];
+        foreach ($GLOBALS['SEM_CLASS'] as $class_id => $class) {
+            $sem_classes[$class_id] = $class['name'];
+            foreach ($class->getSemTypes() as $type_id => $type) {
+                $sem_classes[$class_id . '_' . $type_id] = '  ' . $type['name'];
+            }
         }
-        ksort($sem_classes);
         return $sem_classes;
     }
 
@@ -126,18 +128,70 @@ abstract class IndexObject
         }
     }
 
+    protected function  getSemClassString()
+    {
+        $classes = SemClass::getClasses();
+        $v = $_SESSION['global_search']['selects'][$this->getSelectName('sem_class')];
+        if ($pos = strpos($v, '_')) {
+            // return just the sem_types.id (which is equal to seminare.status)
+            return substr($v, $pos + 1);
+        } else {
+            $type_ids = array();
+            // return a concatenated string containing all sem_types
+            // belonging to the chosen sem_class
+            foreach ($classes[$v]->getSemTypes() as $types_id => $types) {
+                array_push($type_ids, $types['id']);
+            }
+            return implode('\', \'', $type_ids);
+        }
+    }
+
     /**
      * @return string
      */
-    protected function getInstituteArray()
+    protected function getInstituteString()
     {
         $institutes = Institute::findByFaculty($_SESSION['global_search']['selects'][$this->getSelectName('institute')]);
         if ($institutes) {
+            var_dump($institutes);
             $var = implode('\', \'', array_column($institutes, 'Institut_id'));
             // append the parent institute itself
             return $var . '\', \'' . $_SESSION['global_search']['selects'][$this->getSelectName('institute')];
         } else {
             return $_SESSION['global_search']['selects'][$this->getSelectName('institute')];
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getFileTypes()
+    {
+        $file_types = array();
+        $file_types[''] = _('Alle Dateitypen');
+        $statement = DBManager::get()->prepare("SELECT DISTINCT dokumente.filename FROM dokumente");
+        $statement->execute();
+        while ($dokument = $statement->fetch(PDO::FETCH_ASSOC)) {
+            $filename = $dokument['filename'];
+            $pos = strrpos($filename, '.');
+            if ($pos !== false) {
+                $filetype = substr($filename, $pos + 1);
+                $file_types[$filetype] = $filetype;
+            } else {
+                $file_types[_('andere')] = _('andere');
+            }
+        }
+        array_unique($file_types);
+        ksort($file_types);
+        return $file_types;
+    }
+
+    private function getSeminarsForSemester()
+    {
+        if ($semester = $_SESSION['global_search']['selects'][$this->getSelectName('semester')]) {
+            return 'WHERE seminare.start_time = ' . $semester;
+        } else {
+            return '';
         }
     }
 
@@ -202,4 +256,5 @@ abstract class IndexObject
     {
         return $this->name;
     }
+
 }

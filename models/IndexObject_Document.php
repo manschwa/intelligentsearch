@@ -10,7 +10,6 @@ class IndexObject_Document extends IndexObject
     {
         $this->setName(_('Dokumente'));
         $this->setSelects($this->getSelectFilters());
-        $this->setFacets($this->getFacetFilters());
     }
 
     public function sqlIndex()
@@ -43,7 +42,8 @@ class IndexObject_Document extends IndexObject
                                         LEFT JOIN seminare ON dokumente.seminar_id = seminare.Seminar_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND Institut_id IN ('" . $this->getInstituteArray() . "') AND inst_perms != 'user' ") : ' ')
                                      . ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND seminare.Seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
-                                     . ($this->getActiveFacets() ? (" AND UPPER(SUBSTRING(dokumente.filename, -3)) IN ('" . $this->getActiveFacets() . "') ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('semester')] ? (" AND seminare.start_time ='" . $_SESSION['global_search']['selects'][$this->getSelectName('semester')] . "' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('file_type')] ? (" AND IFNULL(NULLIF(SUBSTRING_INDEX(dokumente.filename, '.', -1), dokumente.filename), 'andere') ='" . $_SESSION['global_search']['selects'][$this->getSelectName('file_type')] . "' ") : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
     }
@@ -54,25 +54,34 @@ class IndexObject_Document extends IndexObject
     public function getSelectFilters()
     {
         $selects = array();
+        $selects[$this->getSelectName('semester')] = $this->getSemesters();
         $selects[$this->getSelectName('seminar')] = $this->getSeminars();
-        ksort($selects);
+        $selects[$this->getSelectName('institute')] = $this->getInstitutes();
+        $selects[$this->getSelectName('file_type')] = $this->getFileTypes();
+//        ksort($selects);
         return $selects;
     }
 
-    /**
-     * @return array
-     */
-    public function getFacetFilters()
-    {
-        $facets = array();
-        $statement = DBManager::get()->prepare("SELECT UPPER(SUBSTRING(filename, -3)) AS filetype FROM dokumente");
-        $statement->execute();
-        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $filename = $object['filename'];
-            array_push($facets, $object['filetype']);
-        }
-        array_unique($facets);
-        sort($facets);
-        return $facets;
-    }
+//    /**
+//     * @return array
+//     */
+//    public function getFacetFilters()
+//    {
+//        $facets = array();
+//        $statement = DBManager::get()->prepare("SELECT DISTINCT dokumente.filename FROM dokumente");
+//        $statement->execute();
+//        while ($dokument = $statement->fetch(PDO::FETCH_ASSOC)) {
+//            $filename = $dokument['filename'];
+//            $pos = strrpos($filename, '.');
+//            if ($pos !== false) {
+//                $filetype = substr($filename, $pos + 1);
+//                array_push($facets, strtoupper($filetype));
+//            } else {
+//                array_push($facets, _('unbekannt'));
+//            }
+//        }
+//        array_unique($facets);
+//        sort($facets);
+//        return $facets;
+//    }
 }

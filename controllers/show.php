@@ -25,6 +25,9 @@ class ShowController extends StudipController
 
     public function index_action()
     {
+        if (Request::option('reset_all')) {
+            $_SESSION['global_search'] = null;
+        }
         $this->addSearchSidebar();
     }
 
@@ -138,8 +141,7 @@ class ShowController extends StudipController
         $options_widget->setTitle(_('Filtern nach'));
 
         // Select-Filters
-        if (method_exists($object, 'getSelectFilters')) {
-            $select_filters = $object->getSelects();
+        if ($select_filters = $object->getSelects()) {
             foreach ($select_filters as $name => $selects) {
                 $selected = $_SESSION['global_search']['selects'][$name];
                 $options_widget->addElement(new WidgetElement($name));
@@ -152,13 +154,12 @@ class ShowController extends StudipController
             }
         }
         // Facet-Filters (checkboxes)
-        if (method_exists($object, 'getFacetFilters')) {
+        if ($filter_options = $object->getFacets()) {
             if ($this->search->getActiveFilters()) {
                 $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_filter'));
                 $options_widget->addElement($reset_element);
             }
 
-            $filter_options = $object->getFacets();
             foreach ($filter_options as $facet) {
                 $options_widget->addCheckbox($facet,                            // Name
                     $_SESSION['global_search']['facets'][$facet],               // state
@@ -261,8 +262,13 @@ class ShowController extends StudipController
         $_SESSION['global_search']['category'] = null;
     }
 
+    public function getResetButton()
+    {
+        return \Studip\LinkButton::create(_('Zurücksetzen'), $this->url_for('show/reset_category_filter'), array('title' => _('Zurücksetzen')));
+    }
+
     // customized #url_for for plugins
-    function url_for($to = '')
+    public function url_for($to = '')
     {
         $args = func_get_args();
 

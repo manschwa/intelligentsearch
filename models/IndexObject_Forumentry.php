@@ -7,8 +7,6 @@ class IndexObject_Forumentry extends IndexObject
     const RATING_FORUMAUTHOR = 0.7;
     const RATING_FORUMENTRY_TITLE = 0.75;
 
-    const BELONGS_TO = array('seminar', 'institute');
-
     public function __construct()
     {
         $this->setName(_('Forumeinträge'));
@@ -29,8 +27,8 @@ class IndexObject_Forumentry extends IndexObject
     public function getSelectFilters()
     {
         $selects = array();
-        $selects[_('Veranstaltungen')] = $this->getSeminars();
-        ksort($selects);
+        $selects[$this->getSelectName('semester')] = $this->getSemesters();
+        $selects[$this->getSelectName('seminar')] = $this->getSeminars();
         return $selects;
     }
 
@@ -40,33 +38,13 @@ class IndexObject_Forumentry extends IndexObject
     public function getSearchParams()
     {
         $search_params = array();
-        $search_params['columns']   = ', forum_entries.seminar_id, forum_entries.user_id ';
-        $search_params['joins']     = ' LEFT JOIN forum_entries ON forum_entries.topic_id = search_object.range_id ';
-        $search_params['conditions'] = ($_SESSION['global_search']['selects'][_('Veranstaltungen')] ? (" AND Seminar_id ='" . $_SESSION['global_search']['selects'][_('Veranstaltungen')] . "' ") : ' ')
-            . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
+        $search_params['columns']   = '';
+        $search_params['joins']     = ' LEFT JOIN forum_entries ON forum_entries.topic_id = search_object.range_id '
+                                    . ' LEFT JOIN seminare ON seminare.Seminar_id = forum_entries.seminar_id ';
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND seminare.Seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('semester')] ? (" AND seminare.start_time ='" . $_SESSION['global_search']['selects'][$this->getSelectName('semester')] . "' ") : ' ')
+                                     . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
-    }
-
-    /**
-     * @return array
-     */
-    public function getSeminars()
-    {
-        $seminars = array();
-        if ($GLOBALS['perm']->have_perm('admin')) {
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminare LIMIT 30"); //OBACHT im Livesystem, zu viele Veranstaltungen
-        } elseif (isset($GLOBALS['user'])) {
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, Name FROM seminar_user JOIN seminare USING (Seminar_id) where user_id=:user_id");
-            $statement->bindParam(':user_id', $GLOBALS['user']->id);
-        }
-        $statement->execute();
-
-        $seminars[''] = _('Alle Veranstaltungen');
-        while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $seminars[$object['Seminar_id']] = $object['Name'];
-        }
-        ksort($seminars);
-        return $seminars;
     }
 
     public function getLink($object)
@@ -83,14 +61,4 @@ class IndexObject_Forumentry extends IndexObject
     {
         return Assets::img('icons/16/black/forum.png');
     }
-
-    /**
-     * @param $type string
-     * @return bool
-     */
-    public static function belongsTo($type)
-    {
-        return in_array($type, self::BELONGS_TO);
-    }
-
 }

@@ -51,8 +51,8 @@ class IndexObject_Seminar extends IndexObject
         $search_params['joins']     = ' JOIN seminare ON seminare.Seminar_id = search_object.range_id '
                                     . ' LEFT JOIN seminar_inst ON  seminar_inst.seminar_id = search_object.range_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('semester')] ? (" AND start_time ='" . $_SESSION['global_search']['selects'][$this->getSelectName('semester')] . "' ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND seminar_inst.institut_id IN ('" . $this->getInstituteArray() . "') ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('sem_class')] ? (" AND seminare.status ='" . $_SESSION['global_search']['selects'][$this->getSelectName('sem_class')] . "' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND seminar_inst.institut_id IN ('" . $this->getInstituteString() . "') ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('sem_class')] ? (" AND seminare.status  IN ('" . $this->getSemClassString() . "') ") : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
     }
