@@ -2,7 +2,7 @@
 <form novalidate="novalidate" style="text-align: center">
     <input type="text" style="width: 35%; vertical-align: middle; margin: 10px" name="search" tabindex="1" value="<?= $this->search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
     <?= \Studip\Button::create(_('Suchen'))?>
-    <?= \Studip\LinkButton::create(_('Zurücksetzen'), URLHelper::getURL('?reset_all=1'), array('title' => _('Zurücksetzen'))) ?>
+    <?= \Studip\Button::create(_('Zurücksetzen'))?>
 </form>
 
 <? if ($this->search->query): ?>
