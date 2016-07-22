@@ -14,7 +14,7 @@ class ShowController extends StudipController
         $this->set_layout($GLOBALS['template_factory']->open('layouts/base_without_infobox'));
         // Find query
         $this->query = Request::get('utf8') ? studip_utf8decode(Request::get('search')) : Request::get('search');
-        if ($this->query || Request::submitted('search') || Request::submitted('Suchen')) {
+        if ($this->query || Request::submitted('search') || Request::submitted('searching')) {
             if ($_SESSION['global_search']['query'] !== $this->query) {
                 $this->resetFacetFilters();
             }
@@ -24,7 +24,7 @@ class ShowController extends StudipController
 
     public function index_action()
     {
-        if (Request::submitted('Zurücksetzen')) {
+        if (Request::submitted('reset')) {
             $_SESSION['global_search'] = null;
         }
         $this->addSearchSidebar();

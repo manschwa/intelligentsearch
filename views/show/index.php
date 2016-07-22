@@ -1,8 +1,8 @@
 <!-- Searchbar -->
 <form novalidate="novalidate" style="text-align: center">
     <input type="text" style="width: 35%; vertical-align: middle; margin: 10px" name="search" tabindex="1" value="<?= $this->search->query ?>" placeholder="<?= _('Suchbegriff') ?>">
-    <?= \Studip\Button::create(_('Suchen'))?>
-    <?= \Studip\Button::create(_('Zurücksetzen'))?>
+    <?= \Studip\Button::create(_('Suchen'), 'searching')?>
+    <?= \Studip\Button::create(_('Zurücksetzen'), 'reset')?>
 </form>
 
 <? if ($this->search->query): ?>
