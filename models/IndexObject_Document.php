@@ -58,30 +58,37 @@ class IndexObject_Document extends IndexObject
         $selects[$this->getSelectName('seminar')] = $this->getSeminars();
         $selects[$this->getSelectName('institute')] = $this->getInstitutes();
         $selects[$this->getSelectName('file_type')] = $this->getFileTypes();
-//        ksort($selects);
         return $selects;
     }
 
-//    /**
-//     * @return array
-//     */
-//    public function getFacetFilters()
-//    {
-//        $facets = array();
-//        $statement = DBManager::get()->prepare("SELECT DISTINCT dokumente.filename FROM dokumente");
-//        $statement->execute();
-//        while ($dokument = $statement->fetch(PDO::FETCH_ASSOC)) {
-//            $filename = $dokument['filename'];
-//            $pos = strrpos($filename, '.');
-//            if ($pos !== false) {
-//                $filetype = substr($filename, $pos + 1);
-//                array_push($facets, strtoupper($filetype));
-//            } else {
-//                array_push($facets, _('unbekannt'));
-//            }
-//        }
-//        array_unique($facets);
-//        sort($facets);
-//        return $facets;
-//    }
+    public function insert($event, $document)
+    {
+        $statement = parent::insert($event, $document);
+        // insert new Document into search_object
+        $type = 'document';
+        $seminar = Course::find($document['seminar_id']);
+        $title = $seminar['Name'] . ': ' . $document['name'];
+        $statement['object']->execute(array($document['dokument_id'], $type, $title, $document['seminar_id'], $document['range_id']));
+
+        // insert new Document into search_index
+        $statement['index']->execute(array($document['dokument_id'], $document['name']));
+        $statement['index']->execute(array($document['dokument_id'], $document['description']));
+    }
+
+    public function update($event, $document)
+    {
+        $this->delete($event, $document);
+        $this->insert($event, $document);
+
+    }
+
+    public function delete($event, $document)
+    {
+        $statement = parent::delete($event, $document);
+        // delete from search_index
+        $statement['index']->execute(array($document['dokument_id']));
+
+        // delete from search_object
+        $statement['object']->execute(array($document['dokument_id']));
+    }
 }
