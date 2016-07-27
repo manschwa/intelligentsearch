@@ -8,9 +8,8 @@ class IndexObject_User extends IndexObject
 
     public function __construct()
     {
-        $this->setName(_('Benutzer'));
+        $this->setName(_('Personen'));
         $this->setSelects($this->getSelectFilters());
-//        $this->setFacets($this->getFacetFilters());
     }
 
     public function sqlIndex()
@@ -53,6 +52,54 @@ class IndexObject_User extends IndexObject
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND Institut_id IN ('" . $this->getInstituteArray() . "') AND inst_perms != 'user' ") : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
+    }
+
+    public function insert($event, $user)
+    {
+        $statement = parent::insert($event, $user);
+        // insert new User into search_object
+        $this->type = 'user';
+        $this->title = $user['vorname'] . ' ' . $user['nachname'];
+        $statement['object']->bindParam(':' . self::RANGE_ID, $user['user_id']);
+        $statement['object']->bindParam(':' . self::TYPE, $this->type);
+        $statement['object']->bindParam(':' . self::TITLE, $this->title);
+        $statement['object']->bindParam(':' . self::RANGE2, $user['username']);
+        $statement['object']->execute();
+
+        // insert new User into search_index
+        $this->text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
+        $statement['index']->bindParam(':' . self::ID, $user['user_id']);
+        $statement['index']->bindParam(':' . self::TEXT, $this->text);
+        $statement['index']->execute();
+    }
+
+    public function update($event, $user)
+    {
+        $statement = parent::update($event, $user);
+        // update search_object
+        $this->title = $user['vorname'] . ' ' . $user['nachname'];
+        $statement['object']->bindParam(':' . self::TITLE, $this->title);
+        $statement['object']->bindParam(':' . self::RANGE2, $user['username']);
+        $statement['object']->bindParam(':' . self::ID, $user['user_id']);
+        $statement['object']->execute();
+
+        // update search_index
+        $this->text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
+        $statement['index']->bindParam(':' . self::ID, $user['user_id']);
+        $statement['index']->bindParam(':' . self::TEXT, $this->text);
+        $statement['index']->execute();
+    }
+
+    public function delete($event, $user)
+    {
+        $statement = parent::delete($event, $user);
+        // delete from search_index
+        $statement['index']->bindParam(':' . self::ID, $user['user_id']);
+        $statement['index']->execute();
+
+        // delete from search_object
+        $statement['object']->bindParam(':' . self::ID, $user['user_id']);
+        $statement['object']->execute();
     }
 
     public function getAvatar()
