@@ -64,7 +64,7 @@ class IndexObject_User extends IndexObject
         $statement['object']->execute(array($user['user_id'], $type, $title, $user['username'], null));
 
         // insert new User into search_index
-        $text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
+        $text = $title . ' (' . $user['username'] . ')';
         $statement['index']->execute(array($user['user_id'], $text));
     }
 
@@ -76,7 +76,7 @@ class IndexObject_User extends IndexObject
         $statement['object']->execute(array($title, $user['username'], null, $user['user_id']));
 
         // update search_index
-        $text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
+        $text = $title . ' (' . $user['username'] . ')';
         $statement['index']->execute(array($text, $user['user_id']));
     }
 
