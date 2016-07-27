@@ -15,15 +15,6 @@ abstract class IndexObject
     const TEXT = 'text';
     const ID = 'id';
 
-    protected $object_id;
-    protected $range_id;
-    protected $type;
-    protected $title;
-    protected $range2;
-    protected $range3;
-    protected $text;
-    protected $id;
-
     protected $name;
     protected $selects;
     protected $facets;
@@ -233,18 +224,11 @@ abstract class IndexObject
         // insert new IndexObject into search_object
         $statement['object'] = DBManager::get()->prepare("INSERT INTO search_object ("
             . self::RANGE_ID .", " . self::TYPE . ", " . self::TITLE .", " . self::RANGE2 .", " . self::RANGE3 .") "
-            ." VALUES (:" . self::RANGE_ID . ", :" . self::TYPE . ", :" . self::TITLE . ", :". self::RANGE2 . ", :" . self::RANGE3 . ")");
-        $statement['object']->bindParam(':' . self::RANGE_ID, $this->range_id);
-        $statement['object']->bindParam(':' . self::TYPE, $this->type);
-        $statement['object']->bindParam(':' . self::TITLE, $this->title);
-        $statement['object']->bindParam(':' . self::RANGE2, $this->range2);
-        $statement['object']->bindParam(':' . self::RANGE3, $this->range3);
+            ." VALUES (?, ?, ?, ?, ?)");
 
         // insert new IndexObject search_index
         $statement['index'] = DBManager::get()->prepare("INSERT INTO search_index (" . self::OBJECT_ID . ", " .  self::TEXT .") "
-            ." VALUES ((SELECT object_id FROM search_object WHERE range_id = :" . self::ID . "), :" . self::TEXT . ")");
-        $statement['index']->bindParam(':' . self::ID, $this->id);
-        $statement['index']->bindParam(':' . self::TEXT, $this->text);
+            ." VALUES ((SELECT object_id FROM search_object WHERE range_id = ?), ?)");
 
         return $statement;
     }
@@ -252,19 +236,12 @@ abstract class IndexObject
     public function update($event, $object)
     {
         // update search_object
-        $statement['object'] = DBManager::get()->prepare("UPDATE search_object SET title = :" . self::TITLE
-            . ", range2 = :" . self::RANGE2 . ", range3 = :" . self::RANGE3
-            ." WHERE range_id = :" . self::ID);
-        $statement['object']->bindParam(':' . self::TITLE, $this->title);
-        $statement['object']->bindParam(':' . self::RANGE2, $this->range2);
-        $statement['object']->bindParam(':' . self::RANGE3, $this->range3);
-        $statement['object']->bindParam(':' . self::ID, $this->id);
+        $statement['object'] = DBManager::get()->prepare("UPDATE search_object SET title = ?"
+            . ", range2 = ?, range3 = ? WHERE range_id = ?");
 
         // update search_index
-        $statement['index'] = DBManager::get()->prepare("UPDATE search_index SET text = :" . self::TEXT
-            ." WHERE object_id = (SELECT object_id FROM search_object WHERE range_id = :" . self::ID . ")");
-        $statement['index']->bindParam(':' . self::ID, $this->id);
-        $statement['index']->bindParam(':' . self::TEXT, $this->text);
+        $statement['index'] = DBManager::get()->prepare("UPDATE search_index SET text = ?"
+            ." WHERE object_id = (SELECT object_id FROM search_object WHERE range_id = ?)");
 
         return $statement;
     }
@@ -273,13 +250,11 @@ abstract class IndexObject
     {
         // delete from search_index
         $statement['index'] = DBManager::get()->prepare("DELETE FROM search_index "
-            ." WHERE object_id = (SELECT object_id FROM search_object WHERE range_id = :" . self::ID . ")");
-        $statement['index']->bindParam(':' . self::ID, $this->id);
+            ." WHERE object_id = (SELECT object_id FROM search_object WHERE range_id = ?)");
 
         // delete from search_object
         $statement['object'] = DBManager::get()->prepare("DELETE FROM search_object "
-            ." WHERE range_id = :" . self::ID);
-        $statement['object']->bindParam(':' . self::ID, $this->id);
+            ." WHERE range_id = ?");
 
         return $statement;
     }

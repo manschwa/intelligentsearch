@@ -29,7 +29,7 @@ class IndexObject_Forumentry extends IndexObject
         $selects = array();
         $selects[$this->getSelectName('semester')] = $this->getSemesters();
         $selects[$this->getSelectName('seminar')] = $this->getSeminars();
-//        $selects[$this->getSelectName('user')] = $this->getUsers();
+        $selects[$this->getSelectName('user')] = $this->getUsers();
         return $selects;
     }
 
@@ -61,5 +61,40 @@ class IndexObject_Forumentry extends IndexObject
     public function getAvatar()
     {
         return Assets::img('icons/16/black/forum.png');
+    }
+
+    public function insert($event, $topic_id)
+    {
+        $forumentry = ForumEntry::getEntry($topic_id);
+        $statement = parent::insert($event, $topic_id);
+
+        // insert new ForumEntry into search_object
+        $type = 'forumentry';
+        $seminar = Course::find($forumentry['seminar_id']);
+        $title = $seminar['Name'] . ': ' . ForumEntry::killEdit($forumentry['name']);
+        $statement['object']->execute(array($topic_id, $type, $title, $forumentry['seminar_id'], null));
+
+        // insert new ForumEntry into search_index
+        $statement['index']->execute(array($topic_id, $forumentry['name']));
+        $statement['index']->execute(array($topic_id, $forumentry['content']));
+        $statement['index']->execute(array($topic_id, $forumentry['author']));
+    }
+
+    public function update($event, $topic_id)
+    {
+        $this->delete($event, $topic_id);
+        $this->insert($event, $topic_id);
+        var_dump($event);
+        var_dump($topic_id);die();
+    }
+
+    public function delete($event, $topic_id)
+    {
+        $statement = parent::delete($event, $topic_id);
+        // delete from search_index
+        $statement['index']->execute(array($topic_id));
+
+        // delete from search_object
+        $statement['object']->execute(array($topic_id));
     }
 }

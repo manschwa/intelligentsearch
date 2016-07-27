@@ -57,49 +57,37 @@ class IndexObject_User extends IndexObject
     public function insert($event, $user)
     {
         $statement = parent::insert($event, $user);
+
         // insert new User into search_object
-        $this->type = 'user';
-        $this->title = $user['vorname'] . ' ' . $user['nachname'];
-        $statement['object']->bindParam(':' . self::RANGE_ID, $user['user_id']);
-        $statement['object']->bindParam(':' . self::TYPE, $this->type);
-        $statement['object']->bindParam(':' . self::TITLE, $this->title);
-        $statement['object']->bindParam(':' . self::RANGE2, $user['username']);
-        $statement['object']->execute();
+        $type = 'user';
+        $title = $user['vorname'] . ' ' . $user['nachname'];
+        $statement['object']->execute(array($user['user_id'], $type, $title, $user['username'], null));
 
         // insert new User into search_index
-        $this->text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
-        $statement['index']->bindParam(':' . self::ID, $user['user_id']);
-        $statement['index']->bindParam(':' . self::TEXT, $this->text);
-        $statement['index']->execute();
+        $text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
+        $statement['index']->execute(array($user['user_id'], $text));
     }
 
     public function update($event, $user)
     {
         $statement = parent::update($event, $user);
         // update search_object
-        $this->title = $user['vorname'] . ' ' . $user['nachname'];
-        $statement['object']->bindParam(':' . self::TITLE, $this->title);
-        $statement['object']->bindParam(':' . self::RANGE2, $user['username']);
-        $statement['object']->bindParam(':' . self::ID, $user['user_id']);
-        $statement['object']->execute();
+        $title = $user['vorname'] . ' ' . $user['nachname'];
+        $statement['object']->execute(array($title, $user['username'], null, $user['user_id']));
 
         // update search_index
-        $this->text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
-        $statement['index']->bindParam(':' . self::ID, $user['user_id']);
-        $statement['index']->bindParam(':' . self::TEXT, $this->text);
-        $statement['index']->execute();
+        $text = $user['vorname'] . ' ' . $user['nachname'] . ' (' . $user['username'] . ')';
+        $statement['index']->execute(array($text, $user['user_id']));
     }
 
     public function delete($event, $user)
     {
         $statement = parent::delete($event, $user);
         // delete from search_index
-        $statement['index']->bindParam(':' . self::ID, $user['user_id']);
-        $statement['index']->execute();
+        $statement['index']->execute(array($user['user_id']));
 
         // delete from search_object
-        $statement['object']->bindParam(':' . self::ID, $user['user_id']);
-        $statement['object']->execute();
+        $statement['object']->execute(array($user['user_id']));
     }
 
     public function getAvatar()
