@@ -28,6 +28,37 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
                 ->setInputClass("quicksearchbox intelligentsearch")
                 ->fireJSFunctionOnSelect('function (loc, name) {window.location = STUDIP.URLHelper.getURL("plugins.php/intelligentesucheplugin/show/open/"+loc)}')
                 ->render());
+        // Notifications for Users
+        NotificationCenter::addObserver(new IndexObject_User, "insert", "UserDidCreate");
+        NotificationCenter::addObserver(new IndexObject_User, "update", "UserDidUpdate");
+        NotificationCenter::addObserver(new IndexObject_User, "delete", "UserDidDelete");
+        // Notifications for Courses
+        NotificationCenter::addObserver(new IndexObject_Seminar, "insert", "CourseDidCreate");
+        NotificationCenter::addObserver(new IndexObject_Seminar, "update", "CourseDidUpdate");
+        NotificationCenter::addObserver(new IndexObject_Seminar, "delete", "CourseDidDelete");
+        // Notifications for Documents
+        NotificationCenter::addObserver(new IndexObject_Document, "insert", "DocumentDidCreate");
+        NotificationCenter::addObserver(new IndexObject_Document, "update", "DocumentDidUpdate");
+        NotificationCenter::addObserver(new IndexObject_Document, "delete", "DocumentDidDelete");
+        // Notifications for Institutes
+        NotificationCenter::addObserver(new IndexObject_Institute, "insert", "InstituteDidCreate");
+        NotificationCenter::addObserver(new IndexObject_Institute, "update", "InstituteDidUpdate");
+        NotificationCenter::addObserver(new IndexObject_Institute, "delete", "InstituteDidDelete");
+        // Notifications for Forumentries
+        NotificationCenter::addObserver(new IndexObject_Forumentry, "insert", "ForumAfterInsert");
+        NotificationCenter::addObserver(new IndexObject_Forumentry, "update", "ForumAfterUpdate");
+        NotificationCenter::addObserver(new IndexObject_Forumentry, "delete", "ForumBeforeDelete");
+    }
+
+    public function do_something_delete($event, $id)
+    {
+        var_dump("A forumentry was just deleted.");
+        var_dump($id);die();
+    }
+    public function do_something_update($event, $id)
+    {
+        var_dump("A forumentry was just updated.");
+        var_dump($id);die();
     }
 
     public function initialize() {
