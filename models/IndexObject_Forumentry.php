@@ -63,34 +63,44 @@ class IndexObject_Forumentry extends IndexObject
         return Assets::img('icons/16/black/forum.png');
     }
 
+    /**
+     * @param $event
+     * @param $topic_id
+     */
     public function insert($event, $topic_id)
     {
         $forumentry = ForumEntry::getEntry($topic_id);
-        $statement = parent::insert($event, $topic_id);
+        $statement = $this->getInsertStatement();
 
         // insert new ForumEntry into search_object
         $type = 'forumentry';
         $seminar = Course::find($forumentry['seminar_id']);
-        $title = $seminar['Name'] . ': ' . ForumEntry::killEdit($forumentry['name']);
+        $title = $seminar['Name'] . ': ' . $forumentry['name'];
         $statement['object']->execute(array($topic_id, $type, $title, $forumentry['seminar_id'], null));
 
         // insert new ForumEntry into search_index
         $statement['index']->execute(array($topic_id, $forumentry['name']));
-        $statement['index']->execute(array($topic_id, $forumentry['content']));
+        $statement['index']->execute(array($topic_id, ForumEntry::killEdit($forumentry['content'])));
         $statement['index']->execute(array($topic_id, $forumentry['author']));
     }
 
+    /**
+     * @param $event
+     * @param $topic_id
+     */
     public function update($event, $topic_id)
     {
         $this->delete($event, $topic_id);
         $this->insert($event, $topic_id);
-        var_dump($event);
-        var_dump($topic_id);die();
     }
 
+    /**
+     * @param $event
+     * @param $topic_id
+     */
     public function delete($event, $topic_id)
     {
-        $statement = parent::delete($event, $topic_id);
+        $statement = $this->getDeleteStatement();
         // delete from search_index
         $statement['index']->execute(array($topic_id));
 

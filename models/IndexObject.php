@@ -6,6 +6,7 @@
  */
 abstract class IndexObject
 {
+    // column names in the search_index and search_object table
     const OBJECT_ID = 'object_id';
     const RANGE_ID = 'range_id';
     const TYPE = 'type';
@@ -219,7 +220,10 @@ abstract class IndexObject
         }
     }
 
-    public function insert($event, $object)
+    /**
+     * @return mixed
+     */
+    public function getInsertStatement()
     {
         // insert new IndexObject into search_object
         $statement['object'] = DBManager::get()->prepare("INSERT INTO search_object ("
@@ -233,7 +237,10 @@ abstract class IndexObject
         return $statement;
     }
 
-    public function update($event, $object)
+    /**
+     * @return mixed
+     */
+    public function getUpdateStatement()
     {
         // update search_object
         $statement['object'] = DBManager::get()->prepare("UPDATE search_object SET title = ?"
@@ -246,7 +253,10 @@ abstract class IndexObject
         return $statement;
     }
 
-    public function delete($event, $user)
+    /**
+     * @return mixed
+     */
+    public function getDeleteStatement()
     {
         // delete from search_index
         $statement['index'] = DBManager::get()->prepare("DELETE FROM search_index "

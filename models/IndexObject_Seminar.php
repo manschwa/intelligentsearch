@@ -6,7 +6,7 @@ class IndexObject_Seminar extends IndexObject
     const RATING_SEMINAR_DOZENT = 0.75;
     const RATING_SEMINAR_SUBTITLE = 0.7;
     const RATING_SEMINAR_OTHER = 0.6;
-
+    public $ary = array();
     public function __construct()
     {
         $this->setName(_('Veranstaltungen'));
@@ -84,6 +84,76 @@ class IndexObject_Seminar extends IndexObject
         }
         krsort($institutes);
         return $institutes;
+    }
+
+    /**
+     * @param $event
+     * @param $seminar
+     */
+    public function insert($event, $seminar)
+    {
+        $statement = $this->getInsertStatement();
+
+        // insert new Course into search_object
+        $type = 'seminar';
+        if ($name = $seminar['name']) {
+            $title = $seminar['veranstaltungsnummer'] . ' ' . $seminar['name'];
+            $statement['object']->execute(array($seminar['seminar_id'], $type, $title, null, null));
+        }
+
+        // insert new Course into search_index
+        if ($name = $seminar['name']) {
+            $statement['index']->execute(array($seminar['seminar_id'], $name));
+        }
+        if ($subtitle = $seminar['untertitel']) {
+            $statement['index']->execute(array($seminar['seminar_id'], $subtitle));
+        }
+        if ($description = $seminar['beschreibung']) {
+            $statement['index']->execute(array($seminar['seminar_id'], $description));
+        }
+        if ($lecturer = $this->getLecturer($seminar['seminar_id'])) {
+            $statement['index']->execute(array($seminar['seminar_id'], $lecturer));
+        }
+    }
+
+    /**
+     * @param $event
+     * @param $seminar
+     */
+    public function update($event, $seminar)
+    {
+        $this->delete($event, $seminar);
+        $this->insert($event, $seminar);
+    }
+
+    /**
+     * @param $event
+     * @param $seminar
+     */
+    public function delete($event, $seminar)
+    {
+        $statement = $this->getDeleteStatement();
+        // delete from search_index
+        $statement['index']->execute(array($seminar['seminar_id']));
+
+        // delete from search_object
+        $statement['object']->execute(array($seminar['seminar_id']));
+    }
+
+    /**
+     * @param $seminar_id
+     * @return string
+     */
+    protected function getLecturer($seminar_id)
+    {
+        $stmt = DBManager::get()->prepare("SELECT a.Vorname, a.Nachname FROM auth_user_md5 a "
+            ." JOIN seminar_user su ON su.seminar_id = ?"
+            ." WHERE a.user_id = su.user_id AND su.status = 'dozent'");
+        $stmt->execute(array($seminar_id));
+        while ($lecturer_obj = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $lecturer = $lecturer_obj['Vorname'] . ' ' . $lecturer_obj['Nachname'];
+        }
+        return $lecturer;
     }
 
     public function getAvatar() {

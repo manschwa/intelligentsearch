@@ -54,9 +54,13 @@ class IndexObject_User extends IndexObject
         return $search_params;
     }
 
+    /**
+     * @param $event
+     * @param $user
+     */
     public function insert($event, $user)
     {
-        $statement = parent::insert($event, $user);
+        $statement = $this->getInsertStatement();
 
         // insert new User into search_object
         $type = 'user';
@@ -68,9 +72,13 @@ class IndexObject_User extends IndexObject
         $statement['index']->execute(array($user['user_id'], $text));
     }
 
+    /**
+     * @param $event
+     * @param $user
+     */
     public function update($event, $user)
     {
-        $statement = parent::update($event, $user);
+        $statement = $this->getUpdateStatement();
         // update search_object
         $title = $user['vorname'] . ' ' . $user['nachname'];
         $statement['object']->execute(array($title, $user['username'], null, $user['user_id']));
@@ -80,9 +88,13 @@ class IndexObject_User extends IndexObject
         $statement['index']->execute(array($text, $user['user_id']));
     }
 
+    /**
+     * @param $event
+     * @param $user
+     */
     public function delete($event, $user)
     {
-        $statement = parent::delete($event, $user);
+        $statement = $this->getDeleteStatement();
         // delete from search_index
         $statement['index']->execute(array($user['user_id']));
 

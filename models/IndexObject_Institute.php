@@ -27,9 +27,13 @@ class IndexObject_Institute extends IndexObject
 //        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/institute.png');
     }
 
+    /**
+     * @param $event
+     * @param $institute
+     */
     public function insert($event, $institute)
     {
-        $statement = parent::insert($event, $institute);
+        $statement = parent::getInsertStatement();
 
         // insert new User into search_object
         $type = 'institute';
@@ -40,9 +44,13 @@ class IndexObject_Institute extends IndexObject
         $statement['index']->execute(array($institute['institut_id'], $title));
     }
 
+    /**
+     * @param $event
+     * @param $institute
+     */
     public function update($event, $institute)
     {
-        $statement = parent::update($event, $institute);
+        $statement = $this->getUpdateStatement();
         // update search_object
         $title = $institute['name'];
         $statement['object']->execute(array($title, null, null, $institute['institut_id']));
@@ -51,9 +59,13 @@ class IndexObject_Institute extends IndexObject
         $statement['index']->execute(array($title, $institute['institut_id']));
     }
 
+    /**
+     * @param $event
+     * @param $institute
+     */
     public function delete($event, $institute)
     {
-        $statement = parent::delete($event, $institute);
+        $statement = $this->getDeleteStatement();
         // delete from search_index
         $statement['index']->execute(array($institute['institut_id']));
 

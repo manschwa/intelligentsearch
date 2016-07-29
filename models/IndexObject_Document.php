@@ -61,9 +61,13 @@ class IndexObject_Document extends IndexObject
         return $selects;
     }
 
+    /**
+     * @param $event
+     * @param $document
+     */
     public function insert($event, $document)
     {
-        $statement = parent::insert($event, $document);
+        $statement = $this->getInsertStatement();
         // insert new Document into search_object
         $type = 'document';
         $seminar = Course::find($document['seminar_id']);
@@ -75,16 +79,23 @@ class IndexObject_Document extends IndexObject
         $statement['index']->execute(array($document['dokument_id'], $document['description']));
     }
 
+    /**
+     * @param $event
+     * @param $document
+     */
     public function update($event, $document)
     {
         $this->delete($event, $document);
         $this->insert($event, $document);
-
     }
 
+    /**
+     * @param $event
+     * @param $document
+     */
     public function delete($event, $document)
     {
-        $statement = parent::delete($event, $document);
+        $statement = $this->getDeleteStatement();
         // delete from search_index
         $statement['index']->execute(array($document['dokument_id']));
 

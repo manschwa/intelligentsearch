@@ -50,17 +50,6 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         NotificationCenter::addObserver(new IndexObject_Forumentry, "delete", "ForumBeforeDelete");
     }
 
-    public function do_something_delete($event, $id)
-    {
-        var_dump("A forumentry was just deleted.");
-        var_dump($id);die();
-    }
-    public function do_something_update($event, $id)
-    {
-        var_dump("A forumentry was just updated.");
-        var_dump($id);die();
-    }
-
     public function initialize() {
 
     }
