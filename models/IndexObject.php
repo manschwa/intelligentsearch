@@ -221,6 +221,8 @@ abstract class IndexObject
     }
 
     /**
+     * Returns a generic insert-statement for the tables search_index and search_object.
+     * The values are to be determined and added in the respective sub classes.
      * @return mixed
      */
     public function getInsertStatement()

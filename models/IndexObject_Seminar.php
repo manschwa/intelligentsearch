@@ -111,8 +111,10 @@ class IndexObject_Seminar extends IndexObject
         if ($description = $seminar['beschreibung']) {
             $statement['index']->execute(array($seminar['seminar_id'], $description));
         }
-        if ($lecturer = $this->getLecturer($seminar['seminar_id'])) {
-            $statement['index']->execute(array($seminar['seminar_id'], $lecturer));
+        if ($lecturers = $this->getLecturer($seminar['seminar_id'])) {
+            foreach ($lecturers as $lecturer) {
+                $statement['index']->execute(array($seminar['seminar_id'], $lecturer));
+            }
         }
     }
 
@@ -146,14 +148,15 @@ class IndexObject_Seminar extends IndexObject
      */
     protected function getLecturer($seminar_id)
     {
+        $lecturers = array();
         $stmt = DBManager::get()->prepare("SELECT a.Vorname, a.Nachname FROM auth_user_md5 a "
             ." JOIN seminar_user su ON su.seminar_id = ?"
             ." WHERE a.user_id = su.user_id AND su.status = 'dozent'");
         $stmt->execute(array($seminar_id));
         while ($lecturer_obj = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $lecturer = $lecturer_obj['Vorname'] . ' ' . $lecturer_obj['Nachname'];
+            array_push($lecturers, ($lecturer_obj['Vorname'] . ' ' . $lecturer_obj['Nachname']));
         }
-        return $lecturer;
+        return $lecturers;
     }
 
     public function getAvatar() {
