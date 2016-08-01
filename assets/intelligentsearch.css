@@ -1,28 +1,29 @@
 section.search_results article {
-  margin-bottom: 1em;
-  font-size: 0.8em;
+    margin-bottom: 1em;
+    font-size: 0.8em;
 }
 section.search_results article a {
-  display: block;
-  font-size: 1.4em;
+    display: block;
+    font-size: 1.4em;
 }
 section.search_results article p.result_type {
-  margin: 0;
-  color: #a5adb2;
+    margin: 0;
+    color: #a5adb2;
 }
 section.search_results article span.result {
-  background-color: #e7ebf1;
+    background-color: #e7ebf1;
 }
 .intelligentsearch {
-  display: none;
+    display: none;
 }
 .subclass {
     text-indent: 20px;
 }
 div.pagination {
-  font-size: 1.4em;
+    font-size: 1.4em;
 }
 div.pagination a.current {
-  background-color: #e7ebf1;
-  font-weight: bold;
+    background-color: #e7ebf1;
+    font-weight: bold;
+    padding: 5px 5px 5px 8px;
 }
