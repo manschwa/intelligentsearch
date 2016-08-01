@@ -9,7 +9,8 @@ class IntelligentSearch extends SearchType {
     public $time = 0;
     public $count = 0;
     public $error;
-    private $resultsPerPage = 1;
+    private $resultsPerPage = 10;
+    private $pages_shown = 10;
     private $minLength = 4;
     private $limit = 30;
 
@@ -193,7 +194,9 @@ class IntelligentSearch extends SearchType {
 
     public function getPages($current = 1)
     {
-        return array_slice(range(1, $this->countResultPages()), min(array(max(array(0, $current - 5)), $this->countResultPages() - 10)), 10);
+        return array_slice(range(0, $this->countResultPages() - 1),
+            min(array(max(array(0, $current - ($this->pages_shown / 2))),
+                $this->countResultPages() - ($this->pages_shown))), $this->pages_shown);
     }
 
     public function countResultPages()
