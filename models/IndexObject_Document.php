@@ -40,10 +40,10 @@ class IndexObject_Document extends IndexObject
         $search_params['columns']   = ', dokumente.filename ';
         $search_params['joins']     = ' LEFT JOIN dokumente ON  dokumente.dokument_id = search_object.range_id
                                         LEFT JOIN seminare ON dokumente.seminar_id = seminare.Seminar_id ';
-        $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND Institut_id IN ('" . $this->getInstituteArray() . "') AND inst_perms != 'user' ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND seminare.Seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
+        $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND seminare.Institut_id IN ('" . $this->getInstituteString() . "') ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND dokumente.seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
                                      . ($_SESSION['global_search']['selects'][$this->getSelectName('semester')] ? (" AND seminare.start_time ='" . $_SESSION['global_search']['selects'][$this->getSelectName('semester')] . "' ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('file_type')] ? (" AND IFNULL(NULLIF(SUBSTRING_INDEX(dokumente.filename, '.', -1), dokumente.filename), 'andere') ='" . $_SESSION['global_search']['selects'][$this->getSelectName('file_type')] . "' ") : ' ')
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('file_type')] ? (" AND SUBSTRING_INDEX(dokumente.filename, '.', -1) IN " . $this->getFileTypesString($_SESSION['global_search']['selects'][$this->getSelectName('file_type')])) : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
         return $search_params;
     }
@@ -57,7 +57,7 @@ class IndexObject_Document extends IndexObject
         $selects[$this->getSelectName('semester')] = $this->getSemesters();
         $selects[$this->getSelectName('seminar')] = $this->getSeminars();
         $selects[$this->getSelectName('institute')] = $this->getInstitutes();
-        $selects[$this->getSelectName('file_type')] = $this->getFileTypes();
+        $selects[$this->getSelectName('file_type')] = $this->getStaticFileTypes();
         return $selects;
     }
 

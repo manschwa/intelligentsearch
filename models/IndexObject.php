@@ -66,7 +66,6 @@ abstract class IndexObject
         }
         $statement->execute();
 
-        $seminars[''] = _('Alle Veranstaltungen');
         while ($seminar = $statement->fetch(PDO::FETCH_ASSOC)) {
             $seminars[$seminar['Seminar_id']] = $seminar['Name'] . ' (' . $seminar['name'] . ')';
         }
@@ -75,7 +74,8 @@ abstract class IndexObject
             $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] = '';
         }
         asort($seminars);
-        return $seminars;
+        $first_entry[''] = _('Alle Veranstaltungen');
+        return array_merge($first_entry, $seminars);
     }
 
     /**
@@ -105,11 +105,11 @@ abstract class IndexObject
     {
         $institutes = array();
         $insts = Institute::getInstitutes();
-        $institutes[''] = _('Alle Einrichtungen');
         foreach ($insts as $institute) {
             $institutes[$institute['Institut_id']] = ($institute['is_fak'] ? '' : '  ') . $institute['Name'];
         }
-        return $institutes;
+        $first_entry[''] = _('Alle Einrichtungen');
+        return array_merge($first_entry, $institutes);
     }
 
     protected function getUsers()
@@ -180,7 +180,6 @@ abstract class IndexObject
     {
         $institutes = Institute::findByFaculty($_SESSION['global_search']['selects'][$this->getSelectName('institute')]);
         if ($institutes) {
-            var_dump($institutes);
             $var = implode('\', \'', array_column($institutes, 'Institut_id'));
             // append the parent institute itself
             return $var . '\', \'' . $_SESSION['global_search']['selects'][$this->getSelectName('institute')];
@@ -192,10 +191,9 @@ abstract class IndexObject
     /**
      * @return array
      */
-    public function getFileTypes()
+    public function getDynamicFileTypes()
     {
         $file_types = array();
-        $file_types[''] = _('Alle Dateitypen');
         $statement = DBManager::get()->prepare("SELECT DISTINCT dokumente.filename FROM dokumente");
         $statement->execute();
         while ($dokument = $statement->fetch(PDO::FETCH_ASSOC)) {
@@ -208,7 +206,47 @@ abstract class IndexObject
         }
         array_unique($file_types);
         ksort($file_types);
+        $first_entry[''] = _('Alle Dateitypen');
+        return array_merge($first_entry, $file_types);
+    }
+
+    protected function getStaticFileTypes()
+    {
+        $file_types = array();
+        $file_types[''] = _('Alle Dateitypen');
+        $file_types[1] = _('PDF');
+        $file_types[2] = _('Text');
+        $file_types[3] = _('Bilder');
+        $file_types[4] = _('Audio');
+        $file_types[5] = _('Video');
+        $file_types[6] = _('Tabellen');
+        $file_types[7] = _('Präsentationen');
+        $file_types[8] = _('Komprimierte Dateien');
         return $file_types;
+    }
+
+    protected function getFileTypesString($category)
+    {
+        switch ($category) {
+            case 1: // PDF
+                return "('pdf')";
+            case 2: // Text
+                return "('txt', 'doc', 'docx', 'odt', 'log', 'rtf', 'tex', 'pages', 'fodt', 'sxw')";
+            case 3: // Pictures
+                return "('jpg', 'png', 'gif', 'bmp', 'psd', 'tif', 'tiff', 'eps', 'svg', 'odg', 'fodg')";
+            case 4: // Audio
+                return "('mp3', 'wav', 'wma', 'midi', 'mp4a', 'm4p', 'aiff', 'aa', 'aac', 'aax')";
+            case 5: // Video
+                return "('mov', 'mp4', 'wmv', 'avi', 'flv', 'mkv', 'webm', 'gifv', 'qt', 'mpg', 'mpeg', 'mpv', 'm4v', '3gp', '3g2')";
+            case 6: // Spreadsheets
+                return "('xls', 'xlsx', 'ods', 'fods', 'numbers')";
+            case 7: // Presentations
+                return "('ppt', 'pptx', 'pps', 'key', 'odp', 'fodp')";
+            case 8: // Compressed Files
+                return "('zip', 'rar', 'tz', 'rz', 'bz2', '7zip', '7z', 'tar', 'tgz')";
+            default:
+                throw new InvalidArgumentException(_('Der ausgewählte Dateityp existiert leider nicht.'));
+        }
     }
 
     private function getSeminarsForSemester()
