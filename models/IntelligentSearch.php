@@ -68,6 +68,7 @@ class IntelligentSearch extends SearchType {
             $words = self::filterStopwords($words);
             // Stick em together
             $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
+            var_dump($query);
             $search = "(SELECT object_id, text FROM search_index"
                 . " WHERE MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE)"
                 . " GROUP BY object_id"

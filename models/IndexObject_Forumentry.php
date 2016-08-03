@@ -28,7 +28,9 @@ class IndexObject_Forumentry extends IndexObject
     {
         $selects = array();
         $selects[$this->getSelectName('semester')] = $this->getSemesters();
-        $selects[$this->getSelectName('seminar')] = $this->getSeminars();
+        if (!$GLOBALS['perm']->have_perm('admin')) {
+            $selects[$this->getSelectName('seminar')] = $this->getSeminars();
+        }
         return $selects;
     }
 

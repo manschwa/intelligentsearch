@@ -55,7 +55,9 @@ class IndexObject_Document extends IndexObject
     {
         $selects = array();
         $selects[$this->getSelectName('semester')] = $this->getSemesters();
-        $selects[$this->getSelectName('seminar')] = $this->getSeminars();
+        if (!$GLOBALS['perm']->have_perm('admin')) {
+            $selects[$this->getSelectName('seminar')] = $this->getSeminars();
+        }
         $selects[$this->getSelectName('institute')] = $this->getInstitutes();
         $selects[$this->getSelectName('file_type')] = $this->getStaticFileTypes();
         return $selects;

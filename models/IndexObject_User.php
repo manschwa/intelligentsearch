@@ -18,7 +18,7 @@ class IndexObject_User extends IndexObject
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Vorname, Nachname, "
                 . "CONCAT('(', username, ')')), "
                 . self::RATING_USER." + LOG((SELECT avg(score) FROM user_info WHERE score != 0), score + 3) "
-                . " FROM auth_user_md5 JOIN user_online USING (user_id) JOIN user_info USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
+                . " FROM auth_user_md5 JOIN user_info USING (user_id) JOIN search_object_temp ON (user_id = range_id)");
     }
 
     public function getLink($object)
@@ -78,14 +78,8 @@ class IndexObject_User extends IndexObject
      */
     public function update($event, $user)
     {
-        $statement = $this->getUpdateStatement();
-        // update search_object
-        $title = $user['vorname'] . ' ' . $user['nachname'];
-        $statement['object']->execute(array($title, $user['username'], null, $user['user_id']));
-
-        // update search_index
-        $text = $title . ' (' . $user['username'] . ')';
-        $statement['index']->execute(array($text, $user['user_id']));
+        $this->delete($event, $user);
+        $this->insert($event, $user);
     }
 
     /**
