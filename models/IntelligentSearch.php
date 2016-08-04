@@ -219,8 +219,10 @@ class IntelligentSearch extends SearchType {
         $trimmed_words = array();
         $words = explode(' ', $string);
         foreach ($words as $word) {
-            $word = trim($word);
-            array_push($trimmed_words, trim($word, "*-+~<@>"));
+            $trimmed_word = trim($word, "\t\n\r\0\x0B*-+<>@");
+            if ($trimmed_word) {
+                array_push($trimmed_words, $trimmed_word);
+            }
         }
         return $trimmed_words;
     }
