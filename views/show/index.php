@@ -19,7 +19,7 @@
             <article>
                 <p class="result_type"><?= $result['name'] ?></p>
                 <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
-                <?= IntelligentSearch::getInfo($result, $this->search->query) ?>
+                <?= $this->search->getInfo($result, $this->search->query) ?>
             </article>
         <? endforeach; ?>
     </section>
