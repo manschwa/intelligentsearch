@@ -4,7 +4,9 @@
  * Date: 05.08.16
  */
 
-class DBIndexing extends Migration {
+define('__ROOT__', dirname(dirname(__FILE__)));
+
+class InitialDbIndexing extends Migration {
 
     function description()
     {
@@ -14,6 +16,9 @@ class DBIndexing extends Migration {
 
     function up ()
     {
+        foreach (glob(__ROOT__ . "/models/Index*") as $file) {
+            require $file;
+        }
         IndexManager::sqlIndex();
     }
 
