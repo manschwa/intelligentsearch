@@ -14,7 +14,7 @@ class IndexObject_Seminar extends IndexObject
     }
 
     public function sqlIndex() {
-        IndexManager::createObjects("SELECT seminar_id, 'seminar', CONCAT_WS(' ', sd.name, s.Veranstaltungsnummer, s.name), null,null FROM seminare s JOIN semester_data sd ON s.start_time BETWEEN sd.beginn AND sd.ende");
+        IndexManager::createObjects("SELECT seminar_id, 'seminar', CONCAT(s.name, ' ', '(', sd.name, ')'), null,null FROM seminare s JOIN semester_data sd ON s.start_time BETWEEN sd.beginn AND sd.ende");
         IndexManager::log("Seminar objects created");
         IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', Veranstaltungsnummer, Name), " . IndexManager::relevance(self::RATING_SEMINAR, 'start_time') . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id)");
         IndexManager::log("Indexed name");
@@ -24,12 +24,11 @@ class IndexObject_Seminar extends IndexObject
         IndexManager::log("Indexed description");
         IndexManager::createIndex("SELECT object_id, Sonstiges, " . IndexManager::relevance(self::RATING_SEMINAR_OTHER, 'start_time') . " FROM seminare JOIN search_object_temp ON (seminar_id = range_id) WHERE Sonstiges != ''");
         IndexManager::log("Indexed other");
-        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ',i.title_front, a.Vorname, a.Nachname), " . IndexManager::relevance(self::RATING_SEMINAR_DOZENT, 'start_time') . "
+        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', a.Vorname, a.Nachname), " . IndexManager::relevance(self::RATING_SEMINAR_DOZENT, 'start_time') . "
             FROM seminare s 
             JOIN search_object_temp ON (s.seminar_id = range_id) 
             JOIN seminar_user u ON (s.seminar_id = u.seminar_id AND u.status = 'dozent')
-            JOIN auth_user_md5 a ON (u.user_id = a.user_id)
-            JOIN user_info i ON (u.user_id = i.user_id)");
+            JOIN auth_user_md5 a ON (u.user_id = a.user_id)");
         IndexManager::log("Indexed lecturers");
     }
 
@@ -97,13 +96,15 @@ class IndexObject_Seminar extends IndexObject
         // insert new Course into search_object
         $type = 'seminar';
         if ($name = $seminar['name']) {
-            $title = $seminar['veranstaltungsnummer'] . ' ' . $seminar['name'];
+            $semester = Semester::findByTimestamp($seminar['start_time']);
+            $title = $seminar['name'] . ' (' . $semester['name'] . ')';
             $statement['object']->execute(array($seminar['seminar_id'], $type, $title, null, null));
         }
 
         // insert new Course into search_index
         if ($name = $seminar['name']) {
-            $statement['index']->execute(array($seminar['seminar_id'], $name));
+            $index_title = $seminar['veranstaltungsnummer'] . ' ' . $name;
+            $statement['index']->execute(array($seminar['seminar_id'], $index_title));
         }
         if ($subtitle = $seminar['untertitel']) {
             $statement['index']->execute(array($seminar['seminar_id'], $subtitle));
