@@ -219,7 +219,8 @@ class IntelligentSearch extends SearchType {
         $trimmed_words = array();
         $words = explode(' ', $string);
         foreach ($words as $word) {
-            $trimmed_word = trim($word, "\t\n\r\0\x0B*-+<>@");
+            $trimmed_word = preg_replace("/\W/", " ", $word);
+            $trimmed_word = trim($trimmed_word);
             if ($trimmed_word) {
                 array_push($trimmed_words, $trimmed_word);
             }

@@ -72,9 +72,15 @@ class ShowController extends StudipController
         }
 
         // Root may update index
-        if ($GLOBALS['perm']->have_perm('root')) {
+        $stmt = DBManager::get()->prepare("SELECT 1 FROM blubber LIMIT 1");
+        $stmt->execute();
+        if ($GLOBALS['perm']->have_perm('root')
+            || $GLOBALS['perm']->have_perm('admin') && $stmt->fetch(PDO::FETCH_ASSOC)) {
             $actions = new ActionsWidget();
-            $actions->addLink(_('Indizieren'), $this->url_for('show/indexing'));
+            $actions->addLink(_('Indizieren'),
+                $this->url_for('show/indexing'),
+                null,
+                array('onclick' => sprintf('return confirm(\'%s\');', _('Wirklich die komplette Datenbank indizieren? Diese Aktion kann lange dauern.'))))->asDialog(false);
             $sidebar->addWidget($actions);
         }
 
