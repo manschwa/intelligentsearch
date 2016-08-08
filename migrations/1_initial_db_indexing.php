@@ -16,9 +16,7 @@ class InitialDbIndexing extends Migration {
 
     function up ()
     {
-        foreach (glob(__ROOT__ . "/models/Index*") as $file) {
-            require $file;
-        }
+        StudipAutoloader::addAutoloadPath(__ROOT__ . '/models');
         IndexManager::sqlIndex();
     }
 
