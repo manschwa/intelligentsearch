@@ -155,18 +155,19 @@ abstract class IndexObject
         }
     }
 
-    protected function  getSemClassString()
+    protected function getSemClassString()
     {
         $classes = SemClass::getClasses();
-        $v = $_SESSION['global_search']['selects'][$this->getSelectName('sem_class')];
-        if ($pos = strpos($v, '_')) {
+        $sem_class = $_SESSION['global_search']['selects'][$this->getSelectName('sem_class')];
+        if ($pos = strpos($sem_class, '_')) {
             // return just the sem_types.id (which is equal to seminare.status)
-            return substr($v, $pos + 1);
+            return substr($sem_class, $pos + 1);
         } else {
             $type_ids = array();
             // return a concatenated string containing all sem_types
             // belonging to the chosen sem_class
-            foreach ($classes[$v]->getSemTypes() as $types_id => $types) {
+            $class = $classes[$sem_class];
+            foreach ($class->getSemTypes() as $types_id => $types) {
                 array_push($type_ids, $types['id']);
             }
             return implode('\', \'', $type_ids);

@@ -72,21 +72,13 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
             });
         }
     }
-    
+
         public static function onEnable($pluginId) {
         parent::onEnable($pluginId);
-        require_once "IntelligentesucheCronjob.php";
-        $task = new IntelligentesucheCronjob();
-        $task_id = CronjobScheduler::getInstance()->registerTask($task);
-        CronjobScheduler::scheduleOnce($task_id, strtotime('+1 minute'))->activate();
-        CronjobScheduler::schedulePeriodic($task_id, 55, 0)->activate();
     }
 
     public static function onDisable($pluginId) {
         parent::onDisable($pluginId);
-        $task = CronjobTask::findByClass("IntelligentesucheCronjob");
-        CronjobScheduler::getInstance()->unregisterTask($task[0]->id);
-        $task->delete();
     }
 
 }
