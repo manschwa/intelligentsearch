@@ -114,7 +114,7 @@ abstract class IndexObject
 
     protected function getUsers()
     {
-        $users = array();
+        $users = aapp/controllers/adminrray();
         $users[''] = _('Alle Personen');
         $user = User::find('9f9192df47ac8c23a2674c65e3bfb1ef');
         $users[$user['id']] = $user['vorname'] . $user['nachname'];
@@ -130,8 +130,10 @@ abstract class IndexObject
         $sem_classes[''] = _('Alle Veranstaltungsarten');
         foreach ($GLOBALS['SEM_CLASS'] as $class_id => $class) {
             $sem_classes[$class_id] = $class['name'];
-            foreach ($class->getSemTypes() as $type_id => $type) {
-                $sem_classes[$class_id . '_' . $type_id] = '  ' . $type['name'];
+            if (!$class['studygroup_mode']) {
+                foreach ($class->getSemTypes() as $type_id => $type) {
+                    $sem_classes[$class_id . '_' . $type_id] = '  ' . $type['name'];
+                }
             }
         }
         return $sem_classes;

@@ -73,12 +73,14 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         }
     }
 
-        public static function onEnable($pluginId) {
+    public static function onEnable($pluginId) {
         parent::onEnable($pluginId);
+        $_SESSION['global_search'] = array();
     }
 
     public static function onDisable($pluginId) {
         parent::onDisable($pluginId);
+        $_SESSION['global_search'] = array();
     }
 
 }

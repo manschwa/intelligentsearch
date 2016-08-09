@@ -63,15 +63,16 @@ class IntelligentSearch extends SearchType {
         // build SQL-search string which is included into the statement below if a query is given
         if ($this->query) {
             // Find out single words
-            $words = $this->explodeTrim($this->query);
+            $words = explode(" ", $this->query);
             // Filter for stopwords
             $words = $this->filterStopwords($words);
             // Stick em together
-            $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
+//            $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
+            $query = '"'.$this->query.'"';
             $search = "(SELECT object_id, text FROM search_index"
-                . " WHERE MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE)"
+                . " WHERE MATCH (text) AGAINST ('" . $query . "')"
                 . " GROUP BY object_id"
-                . " ORDER BY SUM(MATCH (text) AGAINST ('" . $query . "' IN BOOLEAN MODE) * relevance) DESC"
+                . " ORDER BY SUM(MATCH (text) AGAINST ('" . $query . "') * relevance) DESC"
                 . ") as sr";
         } else {
             $search = 'search_index';
