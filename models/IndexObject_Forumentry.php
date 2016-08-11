@@ -54,6 +54,16 @@ class IndexObject_Forumentry extends IndexObject
         return "plugins.php/coreforum/index/index/{$object['range_id']}?cid={$object['range2']}";
     }
 
+    public static function getStaticLink($object)
+    {
+        return "plugins.php/coreforum/index/index/{$object['range_id']}?cid={$object['range2']}";
+    }
+
+    public static function getStaticName()
+    {
+        return _('Forumeinträge');
+    }
+
     public function getCondition()
     {
         return "EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range2 AND user_id = '{$GLOBALS['user']->id}')";

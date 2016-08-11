@@ -24,6 +24,16 @@ class IndexObject_Document extends IndexObject
         return "folder.php?cid={$object['range2']}&data[cmd]=tree&open={$object['range_id']}#anker";
     }
 
+    public static function getStaticLink($object)
+    {
+        return "folder.php?cid={$object['range2']}&data[cmd]=tree&open={$object['range_id']}#anker";
+    }
+
+    public static function getStaticName()
+    {
+        return _('Dokumente');
+    }
+
     public function getCondition()
     {
         return "EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range2 AND user_id = '{$GLOBALS['user']->id}')";

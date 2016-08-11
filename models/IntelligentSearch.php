@@ -40,9 +40,9 @@ class IntelligentSearch extends SearchType {
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             if (!$this->category_filter || $object['type'] === $this->category_filter) {
                 $class = self::getClass($object['type']);
-                $obj = new $class;
-                $object['name'] = $obj->getName();
-                $object['link'] = $obj->getLink($object);
+//                $obj = new $class;
+                $object['name'] = $class::getStaticName();
+                $object['link'] = $class::getStaticLink($object);
                 $this->results[] = $object;
                 $this->resultTypes[$object['type']] ++;
                 $this->count++;

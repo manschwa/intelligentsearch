@@ -36,6 +36,15 @@ class IndexObject_Seminar extends IndexObject
         return "details.php?sem_id={$object['range_id']}";
     }
 
+    public static function getStaticLink($object) {
+        return "details.php?sem_id={$object['range_id']}";
+    }
+
+    public static function getStaticName()
+    {
+        return _('Veranstatltungen');
+    }
+
     public function getCondition() {
         return " EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = range_id AND visible = 1) OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range_id AND user_id = '{$GLOBALS['user']->id}')";
     }
