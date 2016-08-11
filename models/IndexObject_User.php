@@ -64,7 +64,7 @@ class IndexObject_User extends IndexObject
 
         // insert new User into search_object
         $type = 'user';
-        $title = $user['vorname'] . ' ' . $user['nachname'];
+        $title = $user['title_front'] . ' ' . $user['vorname'] . ' ' . $user['nachname'] . ' ' . $user['title_rear'];
         $statement['object']->execute(array($user['user_id'], $type, $title, $user['username'], null));
 
         // insert new User into search_index
