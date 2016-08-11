@@ -26,6 +26,16 @@ class IndexObject_User extends IndexObject
         return 'dispatch.php/profile?username=' . $object['range2'];
     }
 
+    public static function getStaticLink($object)
+    {
+        return 'dispatch.php/profile?username=' . $object['range2'];
+    }
+
+    public static function getStaticName()
+    {
+        return _('Personen');
+    }
+
     public function getCondition()
     {
         return " EXISTS (SELECT 1 FROM auth_user_md5 JOIN user_visibility USING (user_id) WHERE user_id = range_id AND search = 1 AND (visible = 'global' OR visible = 'always' OR visible = 'yes'))";

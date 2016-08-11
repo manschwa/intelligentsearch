@@ -21,6 +21,16 @@ class IndexObject_Institute extends IndexObject
         return "institut_main.php?cid={$object['range_id']}";
     }
 
+    public static function getStaticLink($object)
+    {
+        return "institut_main.php?cid={$object['range_id']}";
+    }
+
+    public static function getStaticName()
+    {
+        return _('Einrichtungen');
+    }
+
     public function getAvatar()
     {
 //        $avatar = InstituteAvatar::getAvatar($object['range_id']);
