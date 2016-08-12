@@ -57,7 +57,6 @@ class IndexObject_User extends IndexObject
     public function getSearchParams()
     {
         $search_params = array();
-        $search_params['columns']   = ', Institut_id ';
         $search_params['joins']     = ' LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND Institut_id IN ('" . $this->getInstituteString() . "') AND inst_perms != 'user' ") : ' ')
                                      . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());

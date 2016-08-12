@@ -47,7 +47,6 @@ class IndexObject_Document extends IndexObject
     public function getSearchParams()
     {
         $search_params = array();
-        $search_params['columns']   = ', dokumente.filename ';
         $search_params['joins']     = ' LEFT JOIN dokumente ON  dokumente.dokument_id = search_object.range_id
                                         LEFT JOIN seminare ON dokumente.seminar_id = seminare.Seminar_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND seminare.Institut_id IN ('" . $this->getInstituteString() . "') ") : ' ')

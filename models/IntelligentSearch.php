@@ -40,7 +40,6 @@ class IntelligentSearch extends SearchType {
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             if (!$this->category_filter || $object['type'] === $this->category_filter) {
                 $class = self::getClass($object['type']);
-//                $obj = new $class;
                 $object['name'] = $class::getStaticName();
                 $object['link'] = $class::getStaticLink($object);
                 $this->results[] = $object;
@@ -61,22 +60,7 @@ class IntelligentSearch extends SearchType {
     public function getResultSet($type)
     {
         // build SQL-search string which is included into the statement below if a query is given
-        if ($this->query) {
-            // Find out single words
-            $words = explode(" ", $this->query);
-            // Filter for stopwords
-            $words = $this->filterStopwords($words);
-            // Stick em together
-//            $query = implode('* ', array_merge($words, array('"'.$this->query.'"')));
-            $query = '"'.$this->query.'"';
-            $search = "(SELECT object_id, text FROM search_index"
-                . " WHERE MATCH (text) AGAINST ('" . $query . "')"
-                . " GROUP BY object_id"
-                . " ORDER BY SUM(MATCH (text) AGAINST ('" . $query . "') * relevance) DESC"
-                . ") as sr";
-        } else {
-            $search = 'search_index';
-        }
+        $search = $this->getSearchQuery($this->query);
 
         if ($type) {
             $class = $this->getClass($type);
@@ -85,16 +69,74 @@ class IntelligentSearch extends SearchType {
                 $search_params = $object->getSearchParams();
             }
         }
-        $statement = DBManager::get()->prepare("SELECT search_object.*, text " . $search_params['columns']
+        $statement = DBManager::get()->prepare("SELECT search_object.*, text "
                 . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
                 . " WHERE " . ($type ? (' type = :type' . $search_params['conditions']) : '')
                 . (!$type && $this->query ? $this->buildWhere() : ' ') . " GROUP BY object_id "
-                . ($this->query ? '' : " LIMIT $this->limit"));
+                . ($this->query ? '' : " LIMIT $this->limit")
+                . $this->getRelatedObjects($type));
         if ($type) {
             $statement->bindParam(':type', $type);
         }
         $statement->execute();
         return $statement;
+    }
+
+    private function getSearchQuery ($search_string)
+    {
+        if ($search_string) {
+            $query = '"'.$search_string.'"';
+            return "(SELECT object_id, text FROM search_index"
+                . " WHERE MATCH (text) AGAINST ('" . $query . "')"
+                . " GROUP BY object_id"
+                . ") as sr";
+        } else {
+            return 'search_index';
+        }
+    }
+
+    private function getRelatedObjects($type)
+    {
+        if ($this->query) {
+            switch ($type) {
+                case 'seminar':
+                    return $this->getRelatedSeminars();
+                case 'forumentry':
+                    return $this->getRelatedForumentries();
+                default:
+                    return $this->getRelatedSeminars() . ' ' . $this->getRelatedForumentries();
+            }
+        } else {
+            return '';
+        }
+    }
+
+    private function getRelatedSeminars()
+    {
+        return " UNION SELECT so1.*, so2.title as text "
+            . " FROM search_object as so1 "
+            . " LEFT JOIN seminar_user as su ON so1.range_id = su.Seminar_id "
+            . " LEFT JOIN search_object as so2 ON su.user_id = so2.range_id "
+            . " WHERE so1.type = 'seminar' AND su.status = 'dozent' AND su.user_id IN "
+            . $this->getUserIdsForQuery();
+    }
+
+    private function getRelatedForumentries()
+    {
+        return " UNION SELECT so1.*, so2.title as text "
+            . " FROM search_object as so1 "
+            . " LEFT JOIN forum_entries as fe ON so1.range_id = fe.topic_id "
+            . " LEFT JOIN search_object as so2 ON fe.user_id = so2.range_id "
+            . " WHERE so1.type = 'forumentry' AND fe.user_id IN "
+            . $this->getUserIdsForQuery();
+    }
+
+    private function getUserIdsForQuery()
+    {
+        return " (SELECT range_id "
+             . " FROM search_index JOIN search_object USING (object_id) WHERE type = 'user'"
+             . " AND MATCH (text) AGAINST ('" . $this->query . "') "
+             . " GROUP BY object_id) ";
     }
 
     public function buildWhere()

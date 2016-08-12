@@ -18,7 +18,7 @@ class IndexObject_Forumentry extends IndexObject
         IndexManager::createObjects("SELECT topic_id, 'forumentry', CONCAT(seminare.name, ': ', COALESCE(NULLIF(TRIM(forum_entries.name), ''), '" . _('Forumeintrag') . "')), seminar_id, null FROM forum_entries JOIN seminare USING (seminar_id) WHERE seminar_id != topic_id");
         IndexManager::createIndex("SELECT object_id, name, " . IndexManager::relevance(self::RATING_FORUMENTRY_TITLE, 'forum_entries.chdate') . " FROM forum_entries" . IndexManager::createJoin('topic_id') . " WHERE name != ''");
         IndexManager::createIndex("SELECT object_id, content, " . IndexManager::relevance(self::RATING_FORUMENTRY, 'forum_entries.chdate') . " FROM forum_entries" . IndexManager::createJoin('topic_id') . " WHERE content != ''");
-        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', vorname, nachname, username), " . IndexManager::relevance(self::RATING_FORUMAUTHOR, 'forum_entries.chdate') . " FROM forum_entries JOIN auth_user_md5 USING (user_id) " . IndexManager::createJoin('topic_id'));
+//        IndexManager::createIndex("SELECT object_id, CONCAT_WS(' ', vorname, nachname, username), " . IndexManager::relevance(self::RATING_FORUMAUTHOR, 'forum_entries.chdate') . " FROM forum_entries JOIN auth_user_md5 USING (user_id) " . IndexManager::createJoin('topic_id'));
     }
 
     /**
@@ -40,7 +40,6 @@ class IndexObject_Forumentry extends IndexObject
     public function getSearchParams()
     {
         $search_params = array();
-        $search_params['columns']   = '';
         $search_params['joins']     = ' LEFT JOIN forum_entries ON forum_entries.topic_id = search_object.range_id '
                                     . ' LEFT JOIN seminare ON seminare.Seminar_id = forum_entries.seminar_id ';
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND seminare.Seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
@@ -92,7 +91,7 @@ class IndexObject_Forumentry extends IndexObject
         // insert new ForumEntry into search_index
         $statement['index']->execute(array($topic_id, $forumentry['name']));
         $statement['index']->execute(array($topic_id, ForumEntry::killEdit($forumentry['content'])));
-        $statement['index']->execute(array($topic_id, $forumentry['author']));
+//        $statement['index']->execute(array($topic_id, $forumentry['author']));
     }
 
     /**
