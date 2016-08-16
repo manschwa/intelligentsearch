@@ -52,8 +52,7 @@ class IndexObject_Document extends IndexObject
         $search_params['conditions'] = ($_SESSION['global_search']['selects'][$this->getSelectName('institute')] ? (" AND seminare.Institut_id IN ('" . $this->getInstituteString() . "') ") : ' ')
                                      . ($_SESSION['global_search']['selects'][$this->getSelectName('seminar')] ? (" AND dokumente.seminar_id ='" . $_SESSION['global_search']['selects'][$this->getSelectName('seminar')] . "' ") : ' ')
                                      . ($_SESSION['global_search']['selects'][$this->getSelectName('semester')] ? (" AND seminare.start_time ='" . $_SESSION['global_search']['selects'][$this->getSelectName('semester')] . "' ") : ' ')
-                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('file_type')] ? (" AND SUBSTRING_INDEX(dokumente.filename, '.', -1) IN " . $this->getFileTypesString($_SESSION['global_search']['selects'][$this->getSelectName('file_type')])) : ' ')
-                                     . ($GLOBALS['perm']->have_perm('root') ? '' : " AND " . $this->getCondition());
+                                     . ($_SESSION['global_search']['selects'][$this->getSelectName('file_type')] ? (" AND SUBSTRING_INDEX(dokumente.filename, '.', -1) IN " . $this->getFileTypesString($_SESSION['global_search']['selects'][$this->getSelectName('file_type')])) : ' ');
         return $search_params;
     }
 

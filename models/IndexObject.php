@@ -317,7 +317,7 @@ abstract class IndexObject
      */
     public function getCondition()
     {
-        return null;
+        return 1;
     }
 
     /**

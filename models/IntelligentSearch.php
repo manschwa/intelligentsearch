@@ -72,9 +72,10 @@ class IntelligentSearch extends SearchType {
         $statement = DBManager::get()->prepare("SELECT search_object.*, text "
                 . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
                 . " WHERE " . ($type ? (' type = :type' . $search_params['conditions']) : '')
+                . ($GLOBALS['perm']->have_perm('root') || !$type ? '' : " AND " . $object->getCondition())
                 . (!$type && $this->query ? $this->buildWhere() : ' ') . " GROUP BY object_id "
                 . ($this->query ? '' : " LIMIT $this->limit")
-                . $this->getRelatedObjects($type));
+                . $this->getRelatedObjects($type, $search_params));
         if ($type) {
             $statement->bindParam(':type', $type);
         }
@@ -95,39 +96,50 @@ class IntelligentSearch extends SearchType {
         }
     }
 
-    private function getRelatedObjects($type)
+    private function getRelatedObjects($type, $search_params)
     {
         if ($this->query) {
             switch ($type) {
                 case 'seminar':
-                    return $this->getRelatedSeminars();
+                    return $this->getRelatedSeminars($search_params);
                 case 'forumentry':
-                    return $this->getRelatedForumentries();
+                    return $this->getRelatedForumentries($search_params);
+                case 'user':
+                case 'document':
+                case 'institute':
+                    return '';
                 default:
-                    return $this->getRelatedSeminars() . ' ' . $this->getRelatedForumentries();
+                    return $this->getRelatedSeminars($search_params) . ' '
+                         . $this->getRelatedForumentries($search_params);
             }
         } else {
             return '';
         }
     }
 
-    private function getRelatedSeminars()
+    private function getRelatedSeminars($search_params)
     {
         return " UNION SELECT so1.*, so2.title as text "
             . " FROM search_object as so1 "
             . " LEFT JOIN seminar_user as su ON so1.range_id = su.Seminar_id "
             . " LEFT JOIN search_object as so2 ON su.user_id = so2.range_id "
-            . " WHERE so1.type = 'seminar' AND su.status = 'dozent' AND su.user_id IN "
+            . " JOIN seminare ON seminare.Seminar_id = so1.range_id "
+            . " LEFT JOIN seminar_inst ON  seminar_inst.seminar_id = so1.range_id "
+            . " WHERE so1.type = 'seminar' " . $search_params['conditions']
+            . " AND su.status = 'dozent' AND su.user_id IN "
             . $this->getUserIdsForQuery();
     }
 
-    private function getRelatedForumentries()
+    private function getRelatedForumentries($search_params)
     {
         return " UNION SELECT so1.*, so2.title as text "
             . " FROM search_object as so1 "
             . " LEFT JOIN forum_entries as fe ON so1.range_id = fe.topic_id "
             . " LEFT JOIN search_object as so2 ON fe.user_id = so2.range_id "
-            . " WHERE so1.type = 'forumentry' AND fe.user_id IN "
+            . " LEFT JOIN forum_entries ON forum_entries.topic_id = so1.range_id "
+            . " LEFT JOIN seminare ON seminare.Seminar_id = forum_entries.seminar_id "
+            . " WHERE so1.type = 'forumentry'" . $search_params['conditions']
+            . " AND fe.user_id IN "
             . $this->getUserIdsForQuery();
     }
 
