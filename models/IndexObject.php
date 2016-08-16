@@ -59,9 +59,9 @@ abstract class IndexObject
         $seminars = array();
         if ($GLOBALS['perm']->have_perm('admin')) {
             //OBACHT im Livesystem, zu viele Veranstaltungen
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminare JOIN semester_data ON seminare.start_time = semester_data.beginn " . $this->getSeminarsForSemester() . "  LIMIT 30");
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminare JOIN semester_data ON seminare.start_time = semester_data.beginn " . " WHERE " . $this->getSeminarsForSemester() . "  LIMIT 30");
         } elseif (isset($GLOBALS['user'])) {
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminar_user JOIN seminare USING (Seminar_id) JOIN semester_data ON seminare.start_time = semester_data.beginn WHERE user_id=:user_id");
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminar_user JOIN seminare USING (Seminar_id) JOIN semester_data ON seminare.start_time = semester_data.beginn WHERE user_id=:user_id AND " . $this->getSeminarsForSemester());
             $statement->bindParam(':user_id', $GLOBALS['user']->id);
         }
         $statement->execute();
@@ -255,16 +255,17 @@ abstract class IndexObject
     private function getSeminarsForSemester()
     {
         if ($semester = $_SESSION['global_search']['selects'][$this->getSelectName('semester')]) {
-            return 'WHERE seminare.start_time = ' . $semester;
+            return ' seminare.start_time = ' . $semester;
         } else {
-            return '';
+            return 1;
         }
     }
 
     /**
      * Returns a generic insert-statement for the tables search_index and search_object.
      * The values are to be determined and added in the respective sub classes.
-     * @return mixed
+     *
+     * @return array with strings containing insert-statements
      */
     public function getInsertStatement()
     {
@@ -281,7 +282,12 @@ abstract class IndexObject
     }
 
     /**
-     * @return mixed
+     * Returns a generic update-statement for the tables search_index and search_object.
+     * The values are to be determined and added in the respective sub classes.
+     *
+     * For the most part delete and insert is used instead of UPDATE.
+     *
+     * @return array with strings containing update-statements
      */
     public function getUpdateStatement()
     {
@@ -297,7 +303,10 @@ abstract class IndexObject
     }
 
     /**
-     * @return mixed
+     * Returns a generic update-statement for the tables search_index and search_object.
+     * The values are to be determined and added in the respective sub classes.
+     *
+     * @return array with strings containing delete-statements
      */
     public function getDeleteStatement()
     {

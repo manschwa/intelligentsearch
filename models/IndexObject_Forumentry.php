@@ -63,7 +63,7 @@ class IndexObject_Forumentry extends IndexObject
 
     public function getCondition()
     {
-        return "EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range2 AND user_id = '{$GLOBALS['user']->id}')";
+        return " (EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range2 AND user_id = '{$GLOBALS['user']->id}')) ";
     }
 
     public function getAvatar()
