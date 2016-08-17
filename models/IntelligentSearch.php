@@ -104,13 +104,15 @@ class IntelligentSearch extends SearchType {
                     return $this->getRelatedSeminars($search_params);
                 case 'forumentry':
                     return $this->getRelatedForumentries($search_params);
-                case 'user':
                 case 'document':
+                    return $this->getRelatedDocuments($search_params);
                 case 'institute':
+                case 'user':
                     return '';
                 default:
-                    return $this->getRelatedSeminars($search_params) . ' '
-                         . $this->getRelatedForumentries($search_params);
+                    return $this->getRelatedSeminars($search_params)
+                         . $this->getRelatedForumentries($search_params)
+                         . $this->getRelatedDocuments($search_params);
             }
         } else {
             return '';
@@ -127,7 +129,11 @@ class IntelligentSearch extends SearchType {
             . " LEFT JOIN seminar_inst ON  seminar_inst.seminar_id = so1.range_id "
             . " WHERE so1.type = 'seminar' " . $search_params['conditions']
             . " AND su.status = 'dozent' AND su.user_id IN "
-            . $this->getUserIdsForQuery();
+            . $this->getUserIdsForQuery()
+            . ($GLOBALS['perm']->have_perm('root') ? '' : " AND "
+            . " (EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = so1.range_id AND visible = 1) "
+            . " OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = so1.range_id "
+            . " AND user_id = '{$GLOBALS['user']->id}')) ");
     }
 
     private function getRelatedForumentries($search_params)
@@ -140,7 +146,26 @@ class IntelligentSearch extends SearchType {
             . " LEFT JOIN seminare ON seminare.Seminar_id = forum_entries.seminar_id "
             . " WHERE so1.type = 'forumentry'" . $search_params['conditions']
             . " AND fe.user_id IN "
-            . $this->getUserIdsForQuery();
+            . $this->getUserIdsForQuery()
+            . ($GLOBALS['perm']->have_perm('root') ? '' : " AND "
+            . " (EXISTS (SELECT 1 FROM seminar_user "
+            . " WHERE Seminar_id = so1.range2 AND user_id = '{$GLOBALS['user']->id}')) ");
+    }
+
+    private function getRelatedDocuments($search_params)
+    {
+        return " UNION SELECT so1.*, so2.title as text "
+            . " FROM search_object as so1 "
+            . " LEFT JOIN dokumente as docs ON so1.range_id = docs.dokument_id "
+            . " LEFT JOIN search_object as so2 ON docs.user_id = so2.range_id "
+            . " LEFT JOIN dokumente ON  dokumente.dokument_id = so1.range_id "
+            . " LEFT JOIN seminare ON dokumente.seminar_id = seminare.Seminar_id "
+            . " WHERE so1.type = 'document' " . $search_params['conditions']
+            . " AND docs.user_id IN "
+            . $this->getUserIdsForQuery()
+            . ($GLOBALS['perm']->have_perm('root') ? '' : " AND "
+            . " (EXISTS (SELECT 1 FROM seminar_user "
+            . " WHERE Seminar_id = so1.range2 AND user_id = '{$GLOBALS['user']->id}')) ");
     }
 
     private function getUserIdsForQuery()
