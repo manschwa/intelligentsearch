@@ -272,11 +272,22 @@ class IntelligentSearch extends SearchType {
         return $class::getAvatar($object);
     }
 
-    public function getPages($current = 1)
+    /**
+     * Calculates the 10 pages (for the pagination) that should be shown to the user.
+     *
+     * @param int $current : The current page in the pagination.
+     * @return array of the 10 shown pages in the pagination.
+     *          Initially (*1*, 2, 3, ... 9, 10) if you are on page 0 and
+     *          i.e. (5, 6, 7, 8, 9, *10*, 11, 12, 13, 14, 15) if you are on page 9
+     *          (given $pages_shown = 10).
+     */
+    public function getPages($current = 0)
     {
-        return array_slice(range(0, $this->countResultPages() - 1),
-            min(array(max(array(0, $current - ($this->pages_shown / 2))),
-                $this->countResultPages() - ($this->pages_shown))), $this->pages_shown);
+        $minimum = max(0, $current - ($this->pages_shown / 2));
+        $maximum = $current <= ($this->pages_shown / 2) ?
+            min($this->pages_shown - 1 , $this->countResultPages() - 1) :
+            min($current + ($this->pages_shown / 2), $this->countResultPages() - 1);
+        return range($minimum, $maximum);
     }
 
     public function countResultPages()
