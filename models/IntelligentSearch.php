@@ -37,14 +37,21 @@ class IntelligentSearch extends SearchType {
 
         $statement = $this->getResultSet($category);
 
+        // determine which SQL records (found objects) should be shown to the user
+        // (and adding them to $this->results)
         while ($object = $statement->fetch(PDO::FETCH_ASSOC)) {
             if (!$this->category_filter || $object['type'] === $this->category_filter) {
                 $class = self::getClass($object['type']);
                 $object['name'] = $class::getStaticName();
                 $object['link'] = $class::getStaticLink($object);
-                $this->results[] = $object;
-                $this->resultTypes[$object['type']] ++;
-                $this->count++;
+                if ($object['type'] === 'document') {
+                    $doc = StudipDocument::find($object['range_id']);
+                }
+                if ($object['type'] !== 'document' || $doc->checkAccess($GLOBALS['user']->id)) {
+                    $this->results[] = $object;
+                    $this->resultTypes[$object['type']]++;
+                    $this->count++;
+                }
             }
         }
 
