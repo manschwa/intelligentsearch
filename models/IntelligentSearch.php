@@ -43,6 +43,7 @@ class IntelligentSearch extends SearchType {
      */
     private function search($category = null)
     {
+        $is_root = $GLOBALS['perm']->have_perm('root');
         // Timecapture
         $time = microtime(1);
 
@@ -55,10 +56,10 @@ class IntelligentSearch extends SearchType {
                 $class = self::getClass($object['type']);
                 $object['name'] = $class::getStaticName();
                 $object['link'] = $class::getStaticLink($object);
-                if ($object['type'] === 'document') {
+                if (!$is_root && $object['type'] === 'document') {
                     $doc = StudipDocument::find($object['range_id']);
                 }
-                if ($object['type'] !== 'document' || $doc->checkAccess($GLOBALS['user']->id)) {
+                if ($is_root || $object['type'] !== 'document' || $doc->checkAccess($GLOBALS['user']->id)) {
                     $this->results[] = $object;
                     $this->resultTypes[$object['type']]++;
                     $this->count++;
