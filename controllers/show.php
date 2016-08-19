@@ -144,7 +144,6 @@ class ShowController extends StudipController
     {
         $options_widget = new OptionsWidget;
         $options_widget->setTitle(_('Filtern nach'));
-        $object->setSearch($this->search);
 
         // Select-Filters
         if ($select_filters = $object->getSelects()) {

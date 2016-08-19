@@ -1,8 +1,10 @@
 <?php
 /**
+ * Parent class to all the searchable 'objects'.
+ * This class mainly contains methods for facet- (checkboxes) and select- (dropdown) filters.
+ *
  * User: manschwa
  * Date: 22.06.16
- * Time: 10:25
  */
 abstract class IndexObject
 {
@@ -16,19 +18,22 @@ abstract class IndexObject
     const TEXT = 'text';
     const ID = 'id';
 
+    /** @var  string object name */
     protected $name;
+    /** @var  array with select-filters (dropdowns) */
     protected $selects;
+    /** @var  array with facet-filters (checkboxes) */
     protected $facets;
-    protected $search;
 
     abstract public function __construct();
     abstract public function sqlIndex();
     abstract public function getLink($object);
     abstract public function getAvatar();
 
-
     /**
-     * @param $type string
+     * Method to get the right select filter name for the $SESSION variable in one place.
+     *
+     * @param $type string name of the select filter
      * @return string select filter name
      */
     protected function getSelectName($type)
@@ -52,16 +57,19 @@ abstract class IndexObject
     }
 
     /**
-     * @return array
+     * Get seminars/courses for the seminar-select-filter (dropdown).
+     * The seminar filter is dependent on the semester filter.
+     *
+     * @return array with key => value pairs like: array('seminar_id' => 'seminar_name (semester_name)')
      */
     protected function getSeminars()
     {
         $seminars = array();
-        if ($GLOBALS['perm']->have_perm('admin')) {
-            //OBACHT im Livesystem, zu viele Veranstaltungen
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminare JOIN semester_data ON seminare.start_time = semester_data.beginn " . " WHERE " . $this->getSeminarsForSemester() . "  LIMIT 30");
-        } elseif (isset($GLOBALS['user'])) {
-            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name FROM seminar_user JOIN seminare USING (Seminar_id) JOIN semester_data ON seminare.start_time = semester_data.beginn WHERE user_id=:user_id AND " . $this->getSeminarsForSemester());
+        if (isset($GLOBALS['user'])) {
+            $statement = DBManager::get()->prepare("SELECT Seminar_id, seminare.Name, semester_data.name "
+                        . " FROM seminar_user JOIN seminare USING (Seminar_id) "
+                        . " JOIN semester_data ON seminare.start_time = semester_data.beginn "
+                        . " WHERE user_id = :user_id AND " . $this->getSeminarsForSemester());
             $statement->bindParam(':user_id', $GLOBALS['user']->id);
         }
         $statement->execute();
@@ -79,7 +87,11 @@ abstract class IndexObject
     }
 
     /**
-     * @return array
+     * Get semesters for the semester-select-filter (dropdown).
+     * The semester filter shows all available semesters
+     * and sets the current semester as the selected default.
+     *
+     * @return array with key => value pairs like: array('semester_beginn' => 'semester_name')
      */
     protected function getSemesters()
     {
@@ -99,7 +111,10 @@ abstract class IndexObject
     }
 
     /**
-     * @return array
+     * Get institutes for the institute-select-filter (dropdown).
+     * The institute filter shows all available institutes and presents the 2-level hierarchy with indented names.
+     *
+     * @return array with key => value pairs like: array('institute_id' => 'institute_name')
      */
     protected function getInstitutes()
     {
@@ -112,17 +127,12 @@ abstract class IndexObject
         return array_merge($first_entry, $institutes);
     }
 
-    protected function getUsers()
-    {
-        $users = aapp/controllers/adminrray();
-        $users[''] = _('Alle Personen');
-        $user = User::find('9f9192df47ac8c23a2674c65e3bfb1ef');
-        $users[$user['id']] = $user['vorname'] . $user['nachname'];
-        return $users;
-    }
-
     /**
-     * @return array
+     * Get seminar types for the seminar-type-select-filter (dropdown).
+     * The seminar type filter shows all available seminar types and
+     *  seminar type classes which are presented as a 2-level hierarchy with indented names.
+     *
+     * @return array with key => value pairs like: array('seminar_type_id' => 'seminar_type_name')
      */
     protected function getSemClasses()
     {
@@ -140,7 +150,9 @@ abstract class IndexObject
     }
 
     /**
-     * @return string
+     * Get all active facets as a string to use in an SQL query.
+     *
+     * @return string: active facets formatted for an SQL query
      */
     protected function getActiveFacets()
     {
@@ -157,6 +169,12 @@ abstract class IndexObject
         }
     }
 
+    /**
+     * Get the selected seminar class with sub-types
+     * or a single seminar type as a string to use in an SQL query.
+     *
+     * @return string: seminar class/types formatted for an SQL query
+     */
     protected function getSemClassString()
     {
         $classes = SemClass::getClasses();
@@ -177,7 +195,10 @@ abstract class IndexObject
     }
 
     /**
-     * @return string
+     * Get the selected institute with sub-institutes
+     * or a single institute as a string to use in an SQL query.
+     *
+     * @return string: institutes formatted for an SQL query
      */
     protected function getInstituteString()
     {
@@ -191,28 +212,13 @@ abstract class IndexObject
         }
     }
 
-    /**
-     * @return array
-     */
-    public function getDynamicFileTypes()
-    {
-        $file_types = array();
-        $statement = DBManager::get()->prepare("SELECT DISTINCT dokumente.filename FROM dokumente");
-        $statement->execute();
-        while ($dokument = $statement->fetch(PDO::FETCH_ASSOC)) {
-            $filename = $dokument['filename'];
-            $pos = strrpos($filename, '.');
-            if ($pos !== false) {
-                $filetype = substr($filename, $pos + 1);
-                $file_types[$filetype] = $filetype;
-            }
-        }
-        array_unique($file_types);
-        ksort($file_types);
-        $first_entry[''] = _('Alle Dateitypen');
-        return array_merge($first_entry, $file_types);
-    }
 
+    /**
+     * Get file types for the file-type-select-filter (dropdown).
+     * The file type filter shows a static predefined list of file type names.
+     *
+     * @return array with key => value pairs like: array('file_type_id' => 'file_type_name')
+     */
     protected function getStaticFileTypes()
     {
         $file_types = array();
@@ -228,6 +234,12 @@ abstract class IndexObject
         return $file_types;
     }
 
+    /**
+     * List of file extensions for each file_type_name (see getStaticFileTypes()).
+     *
+     * @param $category int: file_type_id
+     * @return string
+     */
     protected function getFileTypesString($category)
     {
         switch ($category) {
@@ -252,6 +264,11 @@ abstract class IndexObject
         }
     }
 
+    /**
+     * If a semester is selected in the filter, an SQL condition will be returned.
+     *
+     * @return int|string: condition if a semester is selected, 1 otherwise
+     */
     private function getSeminarsForSemester()
     {
         if ($semester = $_SESSION['global_search']['selects'][$this->getSelectName('semester')]) {
@@ -357,22 +374,6 @@ abstract class IndexObject
         if (is_array($facets)) {
             $this->facets = (array)$facets;
         }
-    }
-
-    /**
-     * @param mixed $search
-     */
-    public function setSearch($search)
-    {
-        $this->search = $search;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSearch()
-    {
-        return $this->search;
     }
 
     /**

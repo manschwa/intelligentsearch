@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Class IntelligentSearch
+ * Main class for the search. Contains all relevant query building search functions.
+ */
 class IntelligentSearch extends SearchType {
 
     public $query;
@@ -12,8 +16,15 @@ class IntelligentSearch extends SearchType {
     private $resultsPerPage = 10;
     private $pages_shown = 10;
     private $minLength = 4;
-    private $limit = 30;
+    private $limit = 100;
 
+    /**
+     * This function is called first by the show.php controller and
+     * starts the search and calls $this->search().
+     *
+     * @param $query string: search string entered by the user
+     * @param null $category_filter: string of a category if selected
+     */
     public function query($query, $category_filter = null)
     {
         $this->query = $query;
@@ -25,12 +36,12 @@ class IntelligentSearch extends SearchType {
         }
     }
 
-    public function resultPage($page = 0)
-    {
-        return array_slice($this->results, $page * $this->resultsPerPage, $this->resultsPerPage);
-    }
-
-    public function search($category = null)
+    /**
+     * Function to call $this->getResultSet() and compose the results for the user.
+     *
+     * @param null $category: filters the results for the given category
+     */
+    private function search($category = null)
     {
         // Timecapture
         $time = microtime(1);
@@ -64,9 +75,8 @@ class IntelligentSearch extends SearchType {
      * @param $type string relevant if a category type is given for the search
      * @return object statement result set of the search
      */
-    public function getResultSet($type)
+    private function getResultSet($type)
     {
-        // build SQL-search string which is included into the statement below if a query is given
         $search = $this->getSearchQuery($this->query);
 
         if ($type) {
@@ -90,6 +100,12 @@ class IntelligentSearch extends SearchType {
         return $statement;
     }
 
+    /**
+     * Builds SQL-search string which is included into the statement below if a query is given.
+     *
+     * @param $search_string entered by the user
+     * @return string: SQL query
+     */
     private function getSearchQuery ($search_string)
     {
         if ($search_string) {
@@ -103,6 +119,16 @@ class IntelligentSearch extends SearchType {
         }
     }
 
+    /**
+     * Gets related objects for a given search string (case: there is no Username for an
+     * 'author' of a seminar/forumentry/document written in the search_index, so you need
+     * a search query that finds seminars etc. by username. Reason: if the name of a
+     * Person changes, you don't want to update all entries in the search_index table).
+     *
+     * @param $type string: category_type
+     * @param $search_params array with search conditions for the further use
+     * @return string SQL-Query
+     */
     private function getRelatedObjects($type, $search_params)
     {
         if ($this->query) {
@@ -126,6 +152,10 @@ class IntelligentSearch extends SearchType {
         }
     }
 
+    /**
+     * @param $search_params
+     * @return string
+     */
     private function getRelatedSeminars($search_params)
     {
         return " UNION SELECT so1.*, so2.title as text "
@@ -143,38 +173,47 @@ class IntelligentSearch extends SearchType {
             . " AND user_id = '{$GLOBALS['user']->id}')) ");
     }
 
+    /**
+     * @param $search_params
+     * @return string
+     */
     private function getRelatedForumentries($search_params)
     {
         return " UNION SELECT so1.*, so2.title as text "
             . " FROM search_object as so1 "
-            . " LEFT JOIN forum_entries as fe ON so1.range_id = fe.topic_id "
-            . " LEFT JOIN search_object as so2 ON fe.user_id = so2.range_id "
-            . " LEFT JOIN forum_entries ON forum_entries.topic_id = so1.range_id "
+            . " LEFT JOIN forum_entries ON so1.range_id = forum_entries.topic_id "
+            . " LEFT JOIN search_object as so2 ON forum_entries.user_id = so2.range_id "
             . " LEFT JOIN seminare ON seminare.Seminar_id = forum_entries.seminar_id "
             . " WHERE so1.type = 'forumentry'" . $search_params['conditions']
-            . " AND fe.user_id IN "
+            . " AND forum_entries.user_id IN "
             . $this->getUserIdsForQuery()
             . ($GLOBALS['perm']->have_perm('root') ? '' : " AND "
             . " (EXISTS (SELECT 1 FROM seminar_user "
             . " WHERE Seminar_id = so1.range2 AND user_id = '{$GLOBALS['user']->id}')) ");
     }
 
+    /**
+     * @param $search_params
+     * @return string
+     */
     private function getRelatedDocuments($search_params)
     {
         return " UNION SELECT so1.*, so2.title as text "
             . " FROM search_object as so1 "
-            . " LEFT JOIN dokumente as docs ON so1.range_id = docs.dokument_id "
-            . " LEFT JOIN search_object as so2 ON docs.user_id = so2.range_id "
-            . " LEFT JOIN dokumente ON  dokumente.dokument_id = so1.range_id "
+            . " LEFT JOIN dokumente ON so1.range_id = dokumente.dokument_id "
+            . " LEFT JOIN search_object as so2 ON dokumente.user_id = so2.range_id "
             . " LEFT JOIN seminare ON dokumente.seminar_id = seminare.Seminar_id "
             . " WHERE so1.type = 'document' " . $search_params['conditions']
-            . " AND docs.user_id IN "
+            . " AND dokumente.user_id IN "
             . $this->getUserIdsForQuery()
             . ($GLOBALS['perm']->have_perm('root') ? '' : " AND "
             . " (EXISTS (SELECT 1 FROM seminar_user "
             . " WHERE Seminar_id = so1.range2 AND user_id = '{$GLOBALS['user']->id}')) ");
     }
 
+    /**
+     * @return string
+     */
     private function getUserIdsForQuery()
     {
         return " (SELECT range_id "
@@ -183,6 +222,9 @@ class IntelligentSearch extends SearchType {
              . " GROUP BY object_id) ";
     }
 
+    /**
+     * @return int|string
+     */
     public function buildWhere()
     {
         if ($GLOBALS['perm']->have_perm('root')) {
@@ -219,6 +261,9 @@ class IntelligentSearch extends SearchType {
         return $facets;
     }
 
+    /**
+     * @return array
+     */
     public function getIndexObjectTypes()
     {
         $types = array();
@@ -231,11 +276,20 @@ class IntelligentSearch extends SearchType {
         return $types;
     }
 
+    /**
+     * @param $type
+     * @return string
+     */
     public function getClass($type)
     {
         return "IndexObject_" . ucfirst($type);
     }
 
+    /**
+     * @param $object
+     * @param $query
+     * @return mixed
+     */
     public function getInfo($object, $query)
     {
         // Cut down if info is to long
@@ -251,11 +305,21 @@ class IntelligentSearch extends SearchType {
         }, htmlReady($object['text']));
     }
 
+    /**
+     * @return string
+     */
     public function includePath()
     {
         return __FILE__;
     }
 
+    /**
+     * @param string $keyword
+     * @param array $contextual_data
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
     public function getResults($keyword, $contextual_data = array(), $limit = PHP_INT_MAX, $offset = 0)
     {
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
@@ -270,6 +334,19 @@ class IntelligentSearch extends SearchType {
         return $result;
     }
 
+    /**
+     * @param int $page
+     * @return array
+     */
+    public function resultPage($page = 0)
+    {
+        return array_slice($this->results, $page * $this->resultsPerPage, $this->resultsPerPage);
+    }
+
+    /**
+     * @param string $id
+     * @return mixed
+     */
     public function getAvatarImageTag($id)
     {
         $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
@@ -297,11 +374,19 @@ class IntelligentSearch extends SearchType {
         return range($minimum, $maximum);
     }
 
+    /**
+     * @return float
+     */
     public function countResultPages()
     {
         return ceil(count($this->results) / $this->resultsPerPage);
     }
 
+    /**
+     * @param $words
+     * @param $text
+     * @return int
+     */
     private function findWordPosition($words, $text)
     {
         foreach (explode(' ', $words) as $word) {
@@ -312,20 +397,10 @@ class IntelligentSearch extends SearchType {
         }
     }
 
-    private function explodeTrim($string)
-    {
-        $trimmed_words = array();
-        $words = explode(' ', $string);
-        foreach ($words as $word) {
-            $trimmed_word = preg_replace("/\W/", " ", $word);
-            $trimmed_word = trim($trimmed_word);
-            if ($trimmed_word) {
-                array_push($trimmed_words, $trimmed_word);
-            }
-        }
-        return $trimmed_words;
-    }
-
+    /**
+     * @param $input
+     * @return mixed
+     */
     private function filterStopwords($input)
     {
         $new = $input;
