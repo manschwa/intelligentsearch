@@ -93,12 +93,12 @@ abstract class IndexObject
      *
      * @return array with key => value pairs like: array('semester_beginn' => 'semester_name')
      */
-    protected function getSemesters()
+    public function getSemesters()
     {
         // set current semester as selected
         if (!$_SESSION['global_search']['selects']) {
             $sem = Semester::findCurrent();
-            $_SESSION['global_search']['selects']['Semester'] = $sem['beginn'];
+            $_SESSION['global_search']['selects'][$this->getSelectName('semester')] = $sem['beginn'];
         }
 
         $semesters = array();

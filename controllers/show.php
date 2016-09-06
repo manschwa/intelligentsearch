@@ -53,12 +53,14 @@ class ShowController extends StudipController
         $sidebar->setImage('sidebar/search-sidebar.png');
 
         //TODO don't call getCategoryWidget() twice...
-        $this->getCategoryWidget();
+//        $this->getCategoryWidget();
 
         if ($type = $_SESSION['global_search']['category']) {
             $class = $this->search->getClass($type);
             $object = new $class;
             $facets_widget = $this->getFacetsWidget($object);
+        } else {
+            $facets_widget = $this->getSemesterFilterWidget();
         }
 
         if ($_SESSION['global_search']['query'] || $_SESSION['global_search']['category']) {
@@ -175,6 +177,23 @@ class ShowController extends StudipController
         return $options_widget;
     }
 
+    private function getSemesterFilterWidget()
+    {
+        $options_widget = new OptionsWidget;
+        $options_widget->setTitle(_('Semesterfilter'));
+        $index_object = new IndexObject_Seminar();
+        $semesters = $index_object->getSemesters();
+        $name = _('Semester');
+        $selected = $_SESSION['global_search']['selects'][$name];
+        $options_widget->addSelect($name,                       // Label
+            $this->url_for('show/set_select/' . $name),         // URL
+            $name,                                              // Name
+            $semesters,
+            // need to do this because of implicit type conversion (string to int in associative array)
+            preg_match('/^[1-9][0-9]*$/', $selected) ? (int)$selected : $selected);      // selected option
+        return $options_widget;
+    }
+
     private function getRuntimeWidget()
     {
         $runtime_widget = new SidebarWidget();
@@ -252,7 +271,10 @@ class ShowController extends StudipController
 
     private function resetSelectFilters()
     {
+        $name = _('Semester');
+        $semester = $_SESSION['global_search']['selects'][$name];
         $_SESSION['global_search']['selects'] = array();
+        $_SESSION['global_search']['selects'][$name] = $semester;
     }
 
     private function resetFacetFilters()
@@ -267,12 +289,7 @@ class ShowController extends StudipController
         $_SESSION['global_search']['category'] = null;
     }
 
-    public function getResetButton()
-    {
-        return \Studip\LinkButton::create(_('Zurücksetzen'), $this->url_for('show/reset_category_filter'), array('title' => _('Zurücksetzen')));
-    }
-
-    // customized #url_for for plugins
+    // customized #url_for-method for plugins
     public function url_for($to = '')
     {
         $args = func_get_args();

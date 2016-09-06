@@ -80,20 +80,34 @@ class IntelligentSearch extends SearchType {
     {
         $search = $this->getSearchQuery($this->query);
 
+//        $search_params = '';
         if ($type) {
             $class = $this->getClass($type);
             $object = new $class;
             if (method_exists($object, 'getSearchParams')) {
                 $search_params = $object->getSearchParams();
             }
+        } else if ($semester = $_SESSION['global_search']['selects']['Semester']) {
+            $search_params['joins'] = " LEFT JOIN dokumente ON  dokumente.dokument_id = search_object.range_id "
+                                    . " LEFT JOIN seminare as ds ON dokumente.seminar_id = ds.Seminar_id "
+                                    . " LEFT JOIN forum_entries ON forum_entries.topic_id = search_object.range_id "
+                                    . " LEFT JOIN seminare as fs ON fs.Seminar_id = forum_entries.seminar_id "
+                                    . " LEFT JOIN seminare ON seminare.Seminar_id = search_object.range_id "
+                                    . " LEFT JOIN seminar_inst ON  seminar_inst.seminar_id = search_object.range_id "
+                                    . " LEFT JOIN user_inst ON  user_inst.user_id = search_object.range_id ";
+            $search_params['conditions'] = " AND (ds.start_time = " . $semester
+                                         . " OR fs.start_time = " . $semester
+                                         . " OR seminare.start_time = " . $semester
+                                         . " OR type = 'user' OR type = 'institute') ";
+            $semester_condition['conditions'] = " AND seminare.start_time = $semester ";
         }
         $statement = DBManager::get()->prepare("SELECT search_object.*, text "
                 . " FROM search_object JOIN " . $search . " USING (object_id) " . $search_params['joins']
-                . " WHERE " . ($type ? (' type = :type' . $search_params['conditions']) : '')
+                . " WHERE " . ($type ? (' type = :type ') : ' 1 ') . $search_params['conditions']
                 . ($GLOBALS['perm']->have_perm('root') || !$type ? '' : " AND " . $object->getCondition())
                 . (!$type && $this->query ? $this->buildWhere() : ' ') . " GROUP BY object_id "
                 . ($this->query ? '' : " LIMIT $this->limit")
-                . $this->getRelatedObjects($type, $search_params));
+                . $this->getRelatedObjects($type, ($type ? $search_params : $semester_condition)));
         if ($type) {
             $statement->bindParam(':type', $type);
         }
@@ -110,7 +124,7 @@ class IntelligentSearch extends SearchType {
     private function getSearchQuery ($search_string)
     {
         if ($search_string) {
-            $query = '"'.$search_string.'"';
+            $query = '"' . $search_string . '"';
             return "(SELECT object_id, text FROM search_index"
                 . " WHERE MATCH (text) AGAINST ('" . $query . "')"
                 . " GROUP BY object_id"
@@ -122,7 +136,7 @@ class IntelligentSearch extends SearchType {
 
     /**
      * Gets related objects for a given search string (case: there is no Username for an
-     * 'author' of a seminar/forumentry/document written in the search_index, so you need
+     * 'author' of a seminar/forumentry/document stored in the search_index table, so you need
      * a search query that finds seminars etc. by username. Reason: if the name of a
      * Person changes, you don't want to update all entries in the search_index table).
      *
@@ -229,7 +243,7 @@ class IntelligentSearch extends SearchType {
     public function buildWhere()
     {
         if ($GLOBALS['perm']->have_perm('root')) {
-            return 1;
+            return '';
         }
         foreach (glob(__DIR__ . '/IndexObject_*') as $indexFile) {
             $indexClass = basename($indexFile, ".php");
