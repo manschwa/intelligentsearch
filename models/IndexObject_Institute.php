@@ -31,10 +31,10 @@ class IndexObject_Institute extends IndexObject
         return _('Einrichtungen');
     }
 
-    public function getAvatar()
+    public static function getAvatar($object)
     {
-//        $avatar = InstituteAvatar::getAvatar($object['range_id']);
-//        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/institute.png');
+        $avatar = InstituteAvatar::getAvatar($object['range_id']);
+        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/institute.png');
     }
 
     /**

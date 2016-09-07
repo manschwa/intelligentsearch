@@ -39,7 +39,7 @@ class IndexObject_Document extends IndexObject
         return " (EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range2 AND user_id = '{$GLOBALS['user']->id}')) ";
     }
 
-    public function getAvatar()
+    public static function getAvatar($object)
     {
         return Assets::img('icons/16/black/file.png');
     }

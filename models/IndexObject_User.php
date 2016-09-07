@@ -40,7 +40,7 @@ class IndexObject_User extends IndexObject
 
     public function getCondition()
     {
-        return " (EXISTS (SELECT 1 FROM auth_user_md5 LEFT JOIN user_visibility USING (user_id) WHERE user_id = range_id AND " . get_vis_query('auth_user_md5', 'search') .")) ";
+        return " (EXISTS (SELECT 1 FROM auth_user_md5 LEFT JOIN user_visibility USING (user_id) WHERE user_id = search_object.range_id AND " . get_vis_query('auth_user_md5', 'search') .")) ";
     }
 
     /**
@@ -106,8 +106,8 @@ class IndexObject_User extends IndexObject
         $statement['object']->execute(array($user['user_id']));
     }
 
-    public function getAvatar()
+    public static function getAvatar($object)
     {
-//        return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
+        return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
     }
 }

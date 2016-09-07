@@ -40,7 +40,7 @@ class IndexObject_Seminar extends IndexObject
     }
 
     public function getCondition() {
-        return " (EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = range_id AND visible = 1) OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = range_id AND user_id = '{$GLOBALS['user']->id}'))";
+        return " (EXISTS (SELECT 1 FROM seminare WHERE Seminar_id = search_object.range_id AND visible = 1) OR EXISTS (SELECT 1 FROM seminar_user WHERE Seminar_id = search_object.range_id AND user_id = '{$GLOBALS['user']->id}'))";
     }
 
     /**
@@ -156,9 +156,10 @@ class IndexObject_Seminar extends IndexObject
         return $lecturers;
     }
 
-    public function getAvatar() {
-//        $avatar = CourseAvatar::getAvatar($object['range_id']);
-//        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/seminar.png');
+    public static function getAvatar($object)
+    {
+        $avatar = CourseAvatar::getAvatar($object['range_id']);
+        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/seminar.png');
     }
 
 }

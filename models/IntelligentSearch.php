@@ -56,6 +56,7 @@ class IntelligentSearch extends SearchType {
                 $class = self::getClass($object['type']);
                 $object['name'] = $class::getStaticName();
                 $object['link'] = $class::getStaticLink($object);
+                $object['avatar'] = $class::getAvatar($object);
                 if (!$is_root && $object['type'] === 'document') {
                     $doc = StudipDocument::find($object['range_id']);
                 }
@@ -256,7 +257,7 @@ class IntelligentSearch extends SearchType {
                 $condititions[] = " (search_object.type = '$typename') ";
             }
         }
-        return join(' OR ', $condititions);
+        return ' AND (' . join(' OR ', $condititions) . ') ';
     }
 
     /**
