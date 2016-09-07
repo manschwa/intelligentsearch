@@ -80,7 +80,6 @@ class IntelligentSearch extends SearchType {
     {
         $search = $this->getSearchQuery($this->query);
 
-//        $search_params = '';
         if ($type) {
             $class = $this->getClass($type);
             $object = new $class;

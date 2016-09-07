@@ -52,9 +52,6 @@ class ShowController extends StudipController
         $sidebar = Sidebar::get();
         $sidebar->setImage('sidebar/search-sidebar.png');
 
-        //TODO don't call getCategoryWidget() twice...
-//        $this->getCategoryWidget();
-
         if ($type = $_SESSION['global_search']['category']) {
             $class = $this->search->getClass($type);
             $object = new $class;
@@ -107,7 +104,6 @@ class ShowController extends StudipController
         // offer a reset options only if there is a category selected
         if ($this->getCategoryFilter()) {
             $reset_element = new LinkElement(_('Auswahl aufheben'), $this->url_for('show/reset_category_filter'));
-//            $reset_element->addClass('subclass');
             $category_widget->addElement($reset_element);
         }
         // list all possible categories as Links
