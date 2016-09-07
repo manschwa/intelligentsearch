@@ -33,7 +33,7 @@ class IndexObject_User extends IndexObject
         return 'dispatch.php/profile?username=' . $object['range2'];
     }
 
-    public static function getStaticName()
+    public static function getStaticType()
     {
         return _('Personen');
     }

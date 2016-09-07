@@ -26,7 +26,7 @@ class IndexObject_Institute extends IndexObject
         return "institut_main.php?cid={$object['range_id']}";
     }
 
-    public static function getStaticName()
+    public static function getStaticType()
     {
         return _('Einrichtungen');
     }
@@ -34,7 +34,7 @@ class IndexObject_Institute extends IndexObject
     public static function getAvatar($object)
     {
         $avatar = InstituteAvatar::getAvatar($object['range_id']);
-        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/institute.png');
+        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Icon::create('institute');
     }
 
     /**

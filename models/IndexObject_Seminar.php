@@ -34,7 +34,7 @@ class IndexObject_Seminar extends IndexObject
         return "details.php?sem_id={$object['range_id']}";
     }
 
-    public static function getStaticName()
+    public static function getStaticType()
     {
         return _('Veranstatltungen');
     }
@@ -158,8 +158,7 @@ class IndexObject_Seminar extends IndexObject
 
     public static function getAvatar($object)
     {
-        $avatar = CourseAvatar::getAvatar($object['range_id']);
-        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Assets::img('icons/16/black/seminar.png');
+        return CourseAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::MEDIUM);
     }
 
 }

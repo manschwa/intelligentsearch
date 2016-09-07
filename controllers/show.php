@@ -125,7 +125,7 @@ class ShowController extends StudipController
     private function categoryLink($type, $object)
     {
         $facet_count = $this->search->resultTypes[$type] ? " ({$this->search->resultTypes[$type]})" : '';
-        return new LinkElement($object->getName() . $facet_count,
+        return new LinkElement($object::getStaticType() . $facet_count,
             $this->url_for('show/set_category_filter/' . $type),
             $_SESSION['global_search']['category'] === $type ? Icon::create('arr_1right') : '');
     }

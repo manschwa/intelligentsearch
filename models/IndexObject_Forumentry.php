@@ -56,7 +56,7 @@ class IndexObject_Forumentry extends IndexObject
         return "plugins.php/coreforum/index/index/{$object['range_id']}?cid={$object['range2']}";
     }
 
-    public static function getStaticName()
+    public static function getStaticType()
     {
         return _('Forumeinträge');
     }
@@ -68,7 +68,7 @@ class IndexObject_Forumentry extends IndexObject
 
     public static function getAvatar($object)
     {
-        return Assets::img('icons/16/black/forum.png');
+        return Icon::create('forum');
     }
 
     /**

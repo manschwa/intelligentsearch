@@ -29,7 +29,7 @@ class IndexObject_Document extends IndexObject
         return "folder.php?cid={$object['range2']}&data[cmd]=tree&open={$object['range_id']}#anker";
     }
 
-    public static function getStaticName()
+    public static function getStaticType()
     {
         return _('Dokumente');
     }
@@ -41,7 +41,7 @@ class IndexObject_Document extends IndexObject
 
     public static function getAvatar($object)
     {
-        return Assets::img('icons/16/black/file.png');
+        return Icon::create('file');
     }
 
     public function getSearchParams()
