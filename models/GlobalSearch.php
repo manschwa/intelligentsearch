@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Class IntelligentSearch
+ * Class GlobalSearch
  * Main class for the search. Contains all relevant query building search functions.
  */
-class IntelligentSearch extends SearchType {
+class GlobalSearch extends SearchType {
 
     public $query;
     private $category_filter;

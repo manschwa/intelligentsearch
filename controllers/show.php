@@ -6,7 +6,7 @@ class ShowController extends StudipController
     {
         parent::__construct($dispatcher);
         $this->plugin = $dispatcher->plugin;
-        $this->search = new IntelligentSearch();
+        $this->search = new GlobalSearch();
     }
 
     public function before_filter(&$action, &$args)
@@ -40,7 +40,7 @@ class ShowController extends StudipController
     public function open_action($id) {
         $stmt = DBManager::get()->prepare('SELECT * FROM search_object WHERE object_id = ? LIMIT 1');
         $stmt->execute(array($id));
-        $location = $GLOBALS['ABSOLUTE_URI_STUDIP'].IntelligentSearch::getLink($stmt->fetch(PDO::FETCH_ASSOC));
+        $location = $GLOBALS['ABSOLUTE_URI_STUDIP'].GlobalSearch::getLink($stmt->fetch(PDO::FETCH_ASSOC));
         header("location: $location");die;
     }
 

@@ -3,9 +3,9 @@
 require 'bootstrap.php';
 
 /**
- * IntelligentesuchePlugin.class.php
+ * GlobaleSuchePlugin.class.php
  */
-class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
+class GlobaleSuchePlugin extends StudIPPlugin implements SystemPlugin {
 
     public function __construct() {
         parent::__construct();
@@ -23,7 +23,7 @@ class IntelligentesuchePlugin extends StudIPPlugin implements SystemPlugin {
         PageLayout::addScript($this->getPluginURL() . '/assets/intelligentsearch.js');
 
         // Quicksearchhook
-        PageLayout::addBodyElements(QuickSearch::get("seminar", new IntelligentSearch())
+        PageLayout::addBodyElements(QuickSearch::get("seminar", new GlobalSearch())
                 ->setAttributes(array("placeholder" => _(Suchen)))
                 ->setInputClass("quicksearchbox intelligentsearch")
                 ->fireJSFunctionOnSelect('function (loc, name) {window.location = STUDIP.URLHelper.getURL("plugins.php/intelligentesucheplugin/show/open/"+loc)}')

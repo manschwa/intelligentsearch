@@ -43,10 +43,10 @@ section.search_results article p.avatar img.original {
 }
 div.pagination {
   font-size: 1.4em;
-  padding: 5px 5px 5px 8px;
+  padding: 5px 0 5px 0;
 }
 div.pagination a.current {
   background-color: #e7ebf1;
   font-weight: bold;
-  padding: inherit;
+  padding: 5px 5px 5px 8px;
 }

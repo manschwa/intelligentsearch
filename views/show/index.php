@@ -17,11 +17,11 @@
     <section class="search_results">
         <? foreach ($this->search->resultPage(Request::get('page')) as $result): ?>
             <article>
+                <hr>
                 <p class="result_type"><?= $result['name'] ?></p>
                 <p class="avatar"><?= $result['avatar'] ?></p>
                 <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
                 <?= $this->search->getInfo($result, $this->search->query) ?>
-                <hr>
             </article>
         <? endforeach; ?>
     </section>

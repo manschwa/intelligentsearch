@@ -1,7 +1,7 @@
-pluginname=Intelligente Suche
-pluginclassname=IntelligentesuchePlugin
-origin=intelec
-version=0.8
-studipMinVersion=3.0
+pluginname=Globale Suche
+pluginclassname=GlobaleSuchePlugin
+origin=virtUOS
+version=1.0
+studipMinVersion=3.4
 dbscheme=sql/search_install.sql
 uninstalldbscheme=sql/search_uninstall.sql

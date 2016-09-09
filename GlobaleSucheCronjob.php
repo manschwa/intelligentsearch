@@ -1,6 +1,6 @@
 <?php
 
-class IntelligentesucheCronjob extends CronJob {
+class GlobaleSucheCronjob extends CronJob {
 
     public static function getName() {
         return _('Suchindex erneuern');
