@@ -27,16 +27,26 @@ class IndexObject_Seminar extends IndexObject
     }
 
     public function getLink($object) {
-        return "details.php?sem_id={$object['range_id']}";
+        return "dispatch.php/course/overview?cid={$object['range_id']}";
     }
 
     public static function getStaticLink($object) {
-        return "details.php?sem_id={$object['range_id']}";
+        return "dispatch.php/course/overview?cid={$object['range_id']}";
     }
 
     public static function getStaticType()
     {
         return _('Veranstatltungen');
+    }
+
+    public static function getAvatar($object)
+    {
+        $course = Course::find($object['range_id']);
+        if ($course['status'] == 99) {
+            return StudygroupAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::MEDIUM);
+        } else {
+            return CourseAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::MEDIUM);
+        }
     }
 
     public function getCondition() {
@@ -155,10 +165,4 @@ class IndexObject_Seminar extends IndexObject
         }
         return $lecturers;
     }
-
-    public static function getAvatar($object)
-    {
-        return CourseAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::MEDIUM);
-    }
-
 }

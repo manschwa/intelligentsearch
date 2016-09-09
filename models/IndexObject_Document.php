@@ -41,7 +41,7 @@ class IndexObject_Document extends IndexObject
 
     public static function getAvatar($object)
     {
-        return Icon::create('file');
+        return Icon::create('file', array('class' => "original"));
     }
 
     public function getSearchParams()

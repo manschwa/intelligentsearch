@@ -17,9 +17,9 @@
     <section class="search_results">
         <? foreach ($this->search->resultPage(Request::get('page')) as $result): ?>
             <article>
-                <p class="avatar"><?= $result['avatar'] ?></p>
                 <p class="result_type"><?= $result['name'] ?></p>
-                <a href="<?= URLHelper::getURL($result['link']) ?>"><?= Icon::create($result['']) ?> <?= htmlReady($result['title']) ?></a>
+                <p class="avatar"><?= $result['avatar'] ?></p>
+                <a href="<?= URLHelper::getURL($result['link']) ?>"><?= htmlReady($result['title']) ?></a>
                 <?= $this->search->getInfo($result, $this->search->query) ?>
                 <hr>
             </article>

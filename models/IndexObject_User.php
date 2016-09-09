@@ -108,6 +108,6 @@ class IndexObject_User extends IndexObject
 
     public static function getAvatar($object)
     {
-        return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::SMALL);
+        return Avatar::getAvatar($object['range_id'])->getImageTag(Avatar::MEDIUM);
     }
 }

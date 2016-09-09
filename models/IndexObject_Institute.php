@@ -18,12 +18,12 @@ class IndexObject_Institute extends IndexObject
 
     public function getLink($object)
     {
-        return "institut_main.php?cid={$object['range_id']}";
+        return "dispatch.php/institute/overview?cid={$object['range_id']}";
     }
 
     public static function getStaticLink($object)
     {
-        return "institut_main.php?cid={$object['range_id']}";
+        return "dispatch.php/institute/overview?cid={$object['range_id']}";
     }
 
     public static function getStaticType()
@@ -33,8 +33,7 @@ class IndexObject_Institute extends IndexObject
 
     public static function getAvatar($object)
     {
-        $avatar = InstituteAvatar::getAvatar($object['range_id']);
-        return $avatar->is_customized() ? $avatar->getImageTag(Avatar::SMALL) : Icon::create('institute');
+        return InstituteAvatar::getAvatar($object['range_id'])->getImageTag(Avatar::MEDIUM);
     }
 
     /**

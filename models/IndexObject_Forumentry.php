@@ -68,7 +68,7 @@ class IndexObject_Forumentry extends IndexObject
 
     public static function getAvatar($object)
     {
-        return Icon::create('forum');
+        return Icon::create('forum', array('class' => "original"));
     }
 
     /**

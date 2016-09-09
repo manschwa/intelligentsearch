@@ -19,25 +19,34 @@ section.search_results article hr {
   color: #e7ebf1;
 }
 section.search_results article p.avatar {
-  width: 50px;
-  height: 50px;
-  background-size: 100%;
-  background: no-repeat center center;
+  width: 32px;
+  height: 32px;
   float: left;
-  margin-right: 8px;
+  margin-right: 0.6em;
+  margin-bottom: 0;
+  padding-top: 0.4em;
 }
-section.search_results article img.course-avatar-medium {
-  max-width: 53px;
-  height: 53px;
+section.search_results article p.avatar img.course-avatar-medium {
+  max-width: 32px;
+  height: 32px;
+}
+section.search_results article p.avatar img.avatar-medium {
+  max-width: 32px;
+  height: 32px;
+}
+section.search_results article p.avatar img.original {
+  width: 32px;
+  height: 32px;
 }
 .intelligentsearch {
   display: none;
 }
 div.pagination {
   font-size: 1.4em;
+  padding: 5px 5px 5px 8px;
 }
 div.pagination a.current {
   background-color: #e7ebf1;
   font-weight: bold;
-  padding: 5px 5px 5px 8px;
+  padding: inherit;
 }
